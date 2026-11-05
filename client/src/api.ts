@@ -57,7 +57,38 @@ export interface Slot {
   booking: null | { id: number; topic: string; student: { id: number; name: string; email: string } };
 }
 
-export const getManagedSchedules = () => api<Schedule[]>("/api/staff/schedules");
+export interface AvailableSlot {
+  id: number;
+  startsAt: string;
+  endsAt: string;
+  durationMinutes: number;
+  tutor: { id: number; name: string };
+}
+
+export interface Booking {
+  id: number;
+  status: "ACTIVE" | "CANCELLED";
+  topic: string;
+  createdAt: string;
+  student: { id: number; name: string };
+  slot: {
+    id: number;
+    startsAt: string;
+    endsAt: string;
+    durationMinutes: number;
+    schedule: { id: number; name: string };
+    tutor: { id: number; name: string };
+  };
+}
+
+export const getSchedules = () => api<Schedule[]>("/api/schedules");
+export const getAvailableSlots = (id: number) => api<AvailableSlot[]>(`/api/schedules/${id}/available-slots`);
+export const bookSlot = (slotId: number, topic: string) =>
+  api<Booking>("/api/bookings", { method: "POST", body: { slotId, topic } });
+export const getMyBookings = () => api<Booking[]>("/api/bookings/mine");
+export const getBooking = (id: number) => api<Booking>(`/api/bookings/${id}`);
+
+export const getManagedSchedules =() => api<Schedule[]>("/api/staff/schedules");
 export const getScheduleSlots = (id: number) => api<Slot[]>(`/api/staff/schedules/${id}/slots`);
 export const createSlot = (id: number, startsAt: string, durationMinutes: number) =>
   api<Slot>(`/api/staff/schedules/${id}/slots`, { method: "POST", body: { startsAt, durationMinutes } });
