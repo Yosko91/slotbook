@@ -23,6 +23,7 @@ model User {
   sessions     Session[]
   schedules    ScheduleStaff[]
   slots        Slot[]
+  bookings     Booking[]
 }
 
 // server side session, so logout really deletes it (D-08)
@@ -66,7 +67,30 @@ model Slot {
   createdAt  DateTime @default(now())
   schedule   Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
   tutor      User     @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+  bookings   Booking[]
 
   @@index([tutorId, startsAt])
   @@index([scheduleId, startsAt])
+}
+
+// CANCELLED is used from Sprint 2 (F-04)
+enum BookingStatus {
+  ACTIVE
+  CANCELLED
+}
+
+// BR-09: only one ACTIVE booking per slot. This is a partial unique index
+// written in SQL in the migration, Prisma schema cannot write it.
+model Booking {
+  id        Int           @id @default(autoincrement())
+  slotId    Int
+  studentId Int
+  topic     String
+  status    BookingStatus @default(ACTIVE)
+  createdAt DateTime      @default(now())
+  slot      Slot          @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  student   User          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([slotId])
 }
