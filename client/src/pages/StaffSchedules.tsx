@@ -97,12 +97,11 @@ export default function StaffSchedules() {
             </select>
             {fieldErrors.durationMinutes && <span className="field-error">{fieldErrors.durationMinutes}</span>}
           </label>
-          <label>
-            &nbsp;
+          <div style={{ alignSelf: "center" }}>
             <button type="submit" disabled={busy}>
               {busy ? "Adding..." : "Add slot"}
             </button>
-          </label>
+          </div>
         </form>
       </div>
 

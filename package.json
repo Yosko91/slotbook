@@ -1,0 +1,12 @@
+{
+  "name": "slotbook",
+  "private": true,
+  "version": "1.0.0",
+  "description": "SlotBook root: Playwright end-to-end tests. The app is in client/ and server/.",
+  "scripts": {
+    "e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1"
+  }
+}
