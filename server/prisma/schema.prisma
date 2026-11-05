@@ -21,6 +21,8 @@ model User {
   isActive     Boolean   @default(true)
   createdAt    DateTime  @default(now())
   sessions     Session[]
+  schedules    ScheduleStaff[]
+  slots        Slot[]
 }
 
 // server side session, so logout really deletes it (D-08)
@@ -32,4 +34,39 @@ model Session {
   expiresAt DateTime
 
   @@index([userId])
+}
+
+// one subject desk of the center, for example "Calculus I"
+model Schedule {
+  id          Int             @id @default(autoincrement())
+  name        String          @unique
+  description String          @default("")
+  isActive    Boolean         @default(true)
+  staff       ScheduleStaff[]
+  slots       Slot[]
+}
+
+// BR-04: which tutor manages which schedule
+model ScheduleStaff {
+  scheduleId Int
+  staffId    Int
+  schedule   Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  staff      User     @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@id([scheduleId, staffId])
+}
+
+// times are in UTC (NFR-07). A slot is Booked when it has an ACTIVE booking.
+model Slot {
+  id         Int      @id @default(autoincrement())
+  scheduleId Int
+  tutorId    Int
+  startsAt   DateTime
+  endsAt     DateTime
+  createdAt  DateTime @default(now())
+  schedule   Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  tutor      User     @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@index([tutorId, startsAt])
+  @@index([scheduleId, startsAt])
 }
