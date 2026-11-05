@@ -1,0 +1,20 @@
+TDD red run for F-02 - commit 037b982 - 2026-11-05 14:48
+command: cd server && npx vitest run tests/slot-rules.unit.test.ts tests/slots.api.test.ts --reporter=verbose
+
+ × tests/slots.api.test.ts > F-02 tutor slots API > GET /api/staff/schedules lists only the managed schedules 41ms
+ × tests/slots.api.test.ts > F-02 tutor slots API > TEST-13 tutor creates a valid slot in his schedule 32ms
+ × tests/slots.api.test.ts > F-02 tutor slots API > TEST-14 invalid slots give 400 and nothing is stored 25ms
+ × tests/slots.api.test.ts > F-02 tutor slots API > TEST-15 overlapping slot gives 409, touching slot is ok 18ms
+ × tests/slots.api.test.ts > F-02 tutor slots API > TEST-16 tutor cannot use a schedule he does not manage 14ms
+ ✓ tests/slots.api.test.ts > F-02 tutor slots API > unknown schedule gives 404 16ms
+ × tests/slots.api.test.ts > F-02 tutor slots API > TEST-17 student gets 403 and anonymous gets 401 21ms
+ × tests/slots.api.test.ts > F-02 tutor slots API > slots list shows the upcoming slots of the schedule, sorted 12ms
+ × tests/slot-rules.unit.test.ts > F-02 slot rules > TEST-09 length must be 30 or 60 and start on :00 or :30 4ms
+ × tests/slot-rules.unit.test.ts > F-02 slot rules > TEST-09b missing or bad start time 0ms
+ × tests/slot-rules.unit.test.ts > F-02 slot rules > TEST-10 start must be in the future and at most 60 days ahead 0ms
+ × tests/slot-rules.unit.test.ts > F-02 slot rules > TEST-11 slot must be inside 08:00 - 20:00 Bangkok time 0ms
+ × tests/slot-rules.unit.test.ts > F-02 slot rules > valid slot gives the end time 0ms
+ × tests/slot-rules.unit.test.ts > F-02 slot rules > TEST-12 overlap is true only when the times really cross 0ms
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  2 failed (2)
+      Tests  13 failed | 1 passed (14)

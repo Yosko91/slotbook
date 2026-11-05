@@ -3,6 +3,7 @@
 | Version | Date | Author | Change |
 |---|---|---|---|
 | 1.0 | 5 Nov 2026 | Yohann, Heloise | First version, before implementation. |
+| 1.1 | 5 Nov 2026 | Yohann | TEST-18 (booked slot in the list) is run with F-03, because it needs the Booking table from migration 3. Until F-03 the list always shows Open. Added a Tutor column in the table, because a schedule can have two tutors. |
 
 Linked requirements: FR-04, FR-05, BR-04, BR-05, BR-06, BR-07, BR-08, BR-12, NFR-07. Part of R-01.
 
@@ -22,7 +23,7 @@ Dependencies. F-01 (session and roles).
 
 ## UI
 
-Page "My schedules": select of managed schedules, form (date input, start time select from 08:00 to 19:30 every 30 min, length select 30 or 60, button "Add slot"), table (Date, Time, Length, Status, Student, Topic). Field errors from the API (details) are shown under the fields, a 409 is shown in the red box. Empty table: "No upcoming slot. Add one with the form." If the tutor manages no schedule: "You are not assigned to any schedule yet."
+Page "My schedules": select of managed schedules, form (date input, start time select from 08:00 to 19:30 every 30 min, length select 30 or 60, button "Add slot"), table (Date, Time, Length, Tutor, Status, Student, Topic). Field errors from the API (details) are shown under the fields, a 409 is shown in the red box. Empty table: "No upcoming slot. Add one with the form." If the tutor manages no schedule: "You are not assigned to any schedule yet."
 
 ## API
 
