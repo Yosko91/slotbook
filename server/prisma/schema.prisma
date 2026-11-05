@@ -1,0 +1,35 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// BR-01: one role per user
+enum Role {
+  STUDENT
+  STAFF
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         Role
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  sessions     Session[]
+}
+
+// server side session, so logout really deletes it (D-08)
+model Session {
+  id        String   @id
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([userId])
+}
