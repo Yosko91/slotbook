@@ -161,6 +161,9 @@ test("TEST-31 slot taken by another student while the page is open (AC-16)", asy
 
   await page.getByRole("button", { name: "Confirm booking" }).click();
   await expect(page.locator(".error")).toHaveText("This slot is already booked");
+  // the list is loaded again and the taken slot is gone
+  await expect(page.locator("table")).toBeVisible();
+  await expect(slotRow).toHaveCount(0);
   await page.screenshot({ path: `${SHOTS}/11-slot-already-booked.png`, fullPage: true });
   await tutorApi.dispose();
   await studentApi.dispose();
