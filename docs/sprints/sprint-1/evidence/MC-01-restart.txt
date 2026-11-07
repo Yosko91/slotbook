@@ -1,0 +1,9 @@
+MC-01 (NFR-05) manual check: data is still there after a restart of the API - 2026-11-05 15:03 - commit 175e85e
+
+1. API started on port 3200. GET /api/bookings/mine as ploy@slotbook.dev:
+   9 bookings, ids: 12, 13, 14, 15, 16, 17, 18, 19, 20
+2. API process killed. Health check now: HTTP 000 (000 = nothing is running)
+3. API started again. Same cookie, GET /api/bookings/mine:
+   9 bookings, ids: 12, 13, 14, 15, 16, 17, 18, 19, 20
+
+Result: same bookings before and after the restart. The session also still works, because sessions are stored in PostgreSQL too.
