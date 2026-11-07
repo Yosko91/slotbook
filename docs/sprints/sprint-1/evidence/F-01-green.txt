@@ -1,0 +1,5 @@
+TDD green run for F-01 - commit 7b1ac7c - 2026-11-05 14:46
+command: cd server && npx vitest run tests/auth.api.test.ts
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)

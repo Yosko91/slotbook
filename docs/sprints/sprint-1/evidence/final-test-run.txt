@@ -1,0 +1,58 @@
+Sprint 1 final build and test run
+tested commit: 9ae4a96b810ffb9a11cd470b38ee637ca6417ce5 (feature/e2e-and-release)
+date: 2026-11-05 15:04 - Node v24.19.0 - PostgreSQL 17 local, new empty database slotbook_release (migrate deploy + seed)
+
+$ cd server && npx tsc --noEmit
+OK, no type error
+
+$ cd server && npx vitest run --reporter=verbose
+ ✓ tests/bookings.api.test.ts > F-03 booking API > GET /api/schedules lists the schedules for a student 47ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-22 available slots: only open slots that start in 1 hour or more 40ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-23 student books an open slot and sees it in his bookings 179ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-24 booking a booked slot gives 409 and still one booking 33ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-25 two students at the same time: one 201, one 409 61ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-26 slot starting in less than 1 hour or in the past gives 422 50ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-27 bad topic gives 400, unknown slot gives 404 56ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-28 a booking is visible only to its student and the tutors of the schedule 85ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-29 tutor cannot book (403) and anonymous gets 401 57ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-18 tutor list shows Booked with the student and topic 23ms
+ ✓ tests/auth.api.test.ts > F-01 login, logout, current user > TEST-01 valid login returns the user and an httpOnly cookie 150ms
+ ✓ tests/auth.api.test.ts > F-01 login, logout, current user > TEST-02 wrong password gives 401 and no cookie 103ms
+ ✓ tests/auth.api.test.ts > F-01 login, logout, current user > TEST-03 unknown email gives exactly the same answer 105ms
+ ✓ tests/auth.api.test.ts > F-01 login, logout, current user > missing fields give 400 15ms
+ ✓ tests/auth.api.test.ts > F-01 login, logout, current user > TEST-04 /me returns the current user with a session and 401 without 29ms
+ ✓ tests/auth.api.test.ts > F-01 login, logout, current user > TEST-05 logout deletes the session and the cookie stops working 135ms
+ ✓ tests/auth.api.test.ts > F-01 login, logout, current user > TEST-06 protected endpoints without session give 401 and no data 28ms
+ ✓ tests/auth.api.test.ts > F-01 login, logout, current user > TEST-07 password is stored as a bcrypt hash 88ms
+ ✓ tests/slots.api.test.ts > F-02 tutor slots API > GET /api/staff/schedules lists only the managed schedules 55ms
+ ✓ tests/slots.api.test.ts > F-02 tutor slots API > TEST-13 tutor creates a valid slot in his schedule 48ms
+ ✓ tests/slots.api.test.ts > F-02 tutor slots API > TEST-14 invalid slots give 400 and nothing is stored 57ms
+ ✓ tests/slots.api.test.ts > F-02 tutor slots API > TEST-15 overlapping slot gives 409, touching slot is ok 68ms
+ ✓ tests/slots.api.test.ts > F-02 tutor slots API > TEST-16 tutor cannot use a schedule he does not manage 31ms
+ ✓ tests/slots.api.test.ts > F-02 tutor slots API > unknown schedule gives 404 14ms
+ ✓ tests/slots.api.test.ts > F-02 tutor slots API > TEST-17 student gets 403 and anonymous gets 401 37ms
+ ✓ tests/slots.api.test.ts > F-02 tutor slots API > slots list shows the upcoming slots of the schedule, sorted 62ms
+ ✓ tests/slot-rules.unit.test.ts > F-02 slot rules > TEST-09 length must be 30 or 60 and start on :00 or :30 2ms
+ ✓ tests/slot-rules.unit.test.ts > F-02 slot rules > TEST-09b missing or bad start time 0ms
+ ✓ tests/slot-rules.unit.test.ts > F-02 slot rules > TEST-10 start must be in the future and at most 60 days ahead 0ms
+ ✓ tests/slot-rules.unit.test.ts > F-02 slot rules > TEST-11 slot must be inside 08:00 - 20:00 Bangkok time 0ms
+ ✓ tests/slot-rules.unit.test.ts > F-02 slot rules > valid slot gives the end time 1ms
+ ✓ tests/slot-rules.unit.test.ts > F-02 slot rules > TEST-12 overlap is true only when the times really cross 0ms
+ ✓ tests/booking-rules.unit.test.ts > F-03 booking rules > TEST-20 booking closes 1 hour before the start 2ms
+ ✓ tests/booking-rules.unit.test.ts > F-03 booking rules > TEST-21 topic must have 5 to 200 characters 2ms
+ Test Files  5 passed (5)
+      Tests  34 passed (34)
+   Duration  6.18s (transform 201ms, setup 0ms, import 1.58s, tests 3.23s, environment 1ms)
+
+$ cd client && npm run build
+✓ 33 modules transformed.
+✓ built in 256ms
+
+$ npx playwright test
+[WebServer] npm warn allow-scripts .npmrc allow-scripts setting is being ignored because --allow-scripts was passed on the command line
+  ✓  1 [chromium] › e2e\sprint1.spec.ts:53:5 › TEST-08 login, header and logout (AC-01, AC-04) (3.9s)
+  ✓  2 [chromium] › e2e\sprint1.spec.ts:69:5 › wrong password shows the error (AC-02) (898ms)
+  ✓  3 [chromium] › e2e\sprint1.spec.ts:78:5 › TEST-19, TEST-30 tutor adds a slot, student books it, tutor sees the booking (4.3s)
+  ✓  4 [chromium] › e2e\sprint1.spec.ts:142:5 › TEST-31 slot taken by another student while the page is open (AC-16) (1.7s)
+  ✓  5 [chromium] › e2e\sprint1.spec.ts:172:5 › student cannot open the tutor page and the API refuses (AC-12, AC-21) (1.7s)
+  5 passed (20.7s)

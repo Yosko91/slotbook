@@ -1,0 +1,28 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, sans-serif; color: #222; background: #f6f7f9; }
+header { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; padding: 10px 20px; background: #1f4e79; color: white; }
+header nav { display: flex; gap: 14px; flex: 1; }
+header a { color: white; }
+header button { background: white; color: #1f4e79; }
+main { max-width: 960px; margin: 20px auto; padding: 0 16px; }
+h1, h2 { margin-top: 0; }
+button { padding: 7px 14px; border: none; border-radius: 4px; background: #1f4e79; color: white; cursor: pointer; }
+button:disabled { opacity: 0.6; cursor: default; }
+button.secondary { background: #888; }
+input, select, textarea { padding: 6px; border: 1px solid #aaa; border-radius: 4px; font: inherit; }
+label { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; font-size: 14px; }
+.login { max-width: 360px; margin: 80px auto; background: white; padding: 24px; border-radius: 6px; box-shadow: 0 1px 4px #0002; }
+.card { background: white; padding: 16px; border-radius: 6px; box-shadow: 0 1px 4px #0002; margin-bottom: 16px; }
+.error { background: #fde8e8; color: #9b1c1c; border: 1px solid #f5b5b5; padding: 8px 12px; border-radius: 4px; margin-bottom: 12px; }
+.success { background: #e6f6ea; color: #1e6b34; border: 1px solid #a9dcb6; padding: 8px 12px; border-radius: 4px; margin-bottom: 12px; }
+.field-error { color: #9b1c1c; font-size: 13px; }
+.loading, .empty { color: #666; }
+table { width: 100%; border-collapse: collapse; background: white; }
+th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; font-size: 14px; }
+.row-form { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
+.badge { padding: 2px 8px; border-radius: 10px; font-size: 12px; }
+.badge.open { background: #e6f6ea; color: #1e6b34; }
+.badge.booked { background: #fff3cd; color: #7a5b00; }
+dl { display: grid; grid-template-columns: 140px 1fr; gap: 6px; }
+dt { font-weight: bold; }
+dd { margin: 0; }
