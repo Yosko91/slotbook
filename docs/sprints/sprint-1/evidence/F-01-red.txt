@@ -1,0 +1,19 @@
+TDD red run for F-01 - commit 93ba7dc - 2026-11-05 14:43
+command: cd server && npx vitest run tests/auth.api.test.ts
+
+     × TEST-01 valid login returns the user and an httpOnly cookie 38ms
+     × TEST-02 wrong password gives 401 and no cookie 14ms
+     × TEST-03 unknown email gives exactly the same answer 13ms
+     × missing fields give 400 14ms
+     × TEST-04 /me returns the current user with a session and 401 without 13ms
+     × TEST-05 logout deletes the session and the cookie stops working 23ms
+     × TEST-06 protected endpoints without session give 401 and no data 23ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected 404 to be 200 // Object.is equality
+AssertionError: expected 404 to be 401 // Object.is equality
+AssertionError: expected 404 to be 401 // Object.is equality
+AssertionError: expected 404 to be 400 // Object.is equality
+AssertionError: expected 404 to be 200 // Object.is equality
+AssertionError: expected 404 to be 401 // Object.is equality
+ Test Files  1 failed (1)
+      Tests  7 failed | 1 passed (8)
