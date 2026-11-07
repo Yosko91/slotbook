@@ -1,0 +1,17 @@
+TDD green run for F-03 - commit be21dff - 2026-11-05 14:57
+command: cd server && npx vitest run tests/booking-rules.unit.test.ts tests/bookings.api.test.ts --reporter=verbose
+
+ ✓ tests/bookings.api.test.ts > F-03 booking API > GET /api/schedules lists the schedules for a student 44ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-22 available slots: only open slots that start in 1 hour or more 29ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-23 student books an open slot and sees it in his bookings 117ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-24 booking a booked slot gives 409 and still one booking 22ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-25 two students at the same time: one 201, one 409 45ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-26 slot starting in less than 1 hour or in the past gives 422 35ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-27 bad topic gives 400, unknown slot gives 404 37ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-28 a booking is visible only to its student and the tutors of the schedule 64ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-29 tutor cannot book (403) and anonymous gets 401 32ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-18 tutor list shows Booked with the student and topic 14ms
+ ✓ tests/booking-rules.unit.test.ts > F-03 booking rules > TEST-20 booking closes 1 hour before the start 2ms
+ ✓ tests/booking-rules.unit.test.ts > F-03 booking rules > TEST-21 topic must have 5 to 200 characters 1ms
+ Test Files  2 passed (2)
+      Tests  12 passed (12)
