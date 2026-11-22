@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
-import { ApiError, cancelBooking, getBooking } from "../api";
-import type { Booking } from "../api";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { ApiError, cancelBooking, getAvailableSlots, getBooking, moveBooking } from "../api";
+import type { AvailableSlot, Booking } from "../api";
 import { useAuth } from "../auth";
 import { fmtDate, fmtTime } from "../time";
 
@@ -12,6 +12,7 @@ export default function BookingDetail() {
   const { id } = useParams();
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const state = location.state as { justBooked?: boolean; justMoved?: boolean } | null;
   const [booking, setBooking] = useState<Booking | null>(null);
   const [error, setError] = useState("");
@@ -22,9 +23,15 @@ export default function BookingDetail() {
   const [reasonError, setReasonError] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const [moveSlots, setMoveSlots] = useState<AvailableSlot[] | null>(null);
+  const [moveOpen, setMoveOpen] = useState(false);
+
   useEffect(() => {
     setBooking(null);
     setError("");
+    setMessage("");
+    setMoveOpen(false);
+    setCancelOpen(false);
     getBooking(Number(id))
       .then(setBooking)
       .catch((e) => setError(e.message));
@@ -51,6 +58,35 @@ export default function BookingDetail() {
     } catch (err) {
       if (err instanceof ApiError && err.details?.reason) setReasonError(err.details.reason);
       else setError(err instanceof Error ? err.message : "Could not cancel the booking");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function loadMoveSlots() {
+    setMoveSlots(null);
+    getAvailableSlots(booking!.slot.schedule.id)
+      .then((list) => setMoveSlots(list.filter((s) => s.id !== booking!.slot.id)))
+      .catch((e) => setError(e.message));
+  }
+
+  function openMove() {
+    setMoveOpen(true);
+    setCancelOpen(false);
+    setError("");
+    loadMoveSlots();
+  }
+
+  async function moveTo(slotId: number) {
+    setBusy(true);
+    setError("");
+    try {
+      const moved = await moveBooking(booking!.id, slotId);
+      navigate(`/bookings/${moved.id}`, { state: { justMoved: true } });
+    } catch (err) {
+      // 409 or 422: show the message and reload the list
+      setError(err instanceof Error ? err.message : "Could not move the booking");
+      loadMoveSlots();
     } finally {
       setBusy(false);
     }
@@ -108,9 +144,59 @@ export default function BookingDetail() {
         <p className="empty">You can cancel or move this booking until 12 hours before the start.</p>
       )}
 
-      {canCancel && !cancelOpen && (
+      {canCancel && !cancelOpen && !moveOpen && (
         <div className="actions">
           <button onClick={() => setCancelOpen(true)}>Cancel booking</button>
+          {!isTutor && (
+            <button className="secondary" onClick={openMove}>
+              Move to another slot
+            </button>
+          )}
+        </div>
+      )}
+
+      {moveOpen && (
+        <div className="card">
+          <h3>Move to another slot of {booking.slot.schedule.name}</h3>
+          {!moveSlots ? (
+            <p className="loading">Loading...</p>
+          ) : moveSlots.length === 0 ? (
+            <p className="empty">No other available slot for this schedule.</p>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Time</th>
+                  <th>Length</th>
+                  <th>Tutor</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {moveSlots.map((s) => (
+                  <tr key={s.id}>
+                    <td>{fmtDate(s.startsAt)}</td>
+                    <td>
+                      {fmtTime(s.startsAt)} - {fmtTime(s.endsAt)}
+                    </td>
+                    <td>{s.durationMinutes} min</td>
+                    <td>{s.tutor.name}</td>
+                    <td>
+                      <button onClick={() => moveTo(s.id)} disabled={busy}>
+                        Move here
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          <p>
+            <button type="button" className="secondary" onClick={() => setMoveOpen(false)}>
+              Keep this slot
+            </button>
+          </p>
         </div>
       )}
 

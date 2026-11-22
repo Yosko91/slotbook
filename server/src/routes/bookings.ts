@@ -2,7 +2,7 @@ import { Router } from "express";
 import { Prisma } from "@prisma/client";
 import { getPrisma } from "../prisma.js";
 import { requireRole } from "../middleware/auth.js";
-import { canChangeBooking, checkStudentLimits, isBookingOpen, validateReason, validateTopic } from "../rules/bookingRules.js";
+import { canChangeBooking, checkStudentLimits, checkStudentOverlap, isBookingOpen, validateReason, validateTopic } from "../rules/bookingRules.js";
 import { RuleError, activeRanges, lockSlot, lockStudent } from "../services/bookingTx.js";
 import { bookingInclude, bookingShape } from "./shapes.js";
 
@@ -151,4 +151,82 @@ bookingsRouter.post("/:id/cancel", async (req, res) => {
   }
   const fresh = await prisma.booking.findUniqueOrThrow({ where: { id: booking.id }, include: bookingInclude });
   res.json(bookingShape(fresh));
+});
+
+// F-05: cancel the old booking and create the new one in one transaction (all or nothing)
+bookingsRouter.post("/:id/move", requireRole("STUDENT"), async (req, res) => {
+  const user = req.user!;
+  const slotId = req.body?.slotId;
+  if (!Number.isInteger(slotId)) {
+    res.status(400).json({ error: "Validation failed", details: { slotId: "slotId is required" } });
+    return;
+  }
+  const booking = await findVisibleBooking(req.params.id, user);
+  if (!booking) {
+    res.status(404).json(NOT_FOUND);
+    return;
+  }
+  if (booking.status !== "ACTIVE") {
+    res.status(409).json(NOT_ACTIVE);
+    return;
+  }
+  if (!canChangeBooking(booking.slot.startsAt)) {
+    res.status(422).json({ error: "You can move only until 12 hours before the start", code: "CHANGE_CLOSED" });
+    return;
+  }
+
+  const prisma = getPrisma();
+  const target = await prisma.slot.findFirst({ where: { id: slotId, removedAt: null } });
+  if (!target) {
+    res.status(404).json(SLOT_NOT_FOUND);
+    return;
+  }
+  if (target.id === booking.slotId) {
+    res.status(422).json({ error: "This is already the slot of your booking", code: "SAME_SLOT" });
+    return;
+  }
+  if (target.scheduleId !== booking.slot.scheduleId) {
+    res.status(422).json({ error: "You can move only to a slot of the same schedule", code: "DIFFERENT_SCHEDULE" });
+    return;
+  }
+  if (!isBookingOpen(target.startsAt)) {
+    res.status(422).json({ error: "Booking is closed for this slot (less than 1 hour before the start)", code: "BOOKING_CLOSED" });
+    return;
+  }
+
+  try {
+    const moved = await prisma.$transaction(async (tx) => {
+      await lockStudent(tx, user.id);
+      // BR-14 without the booking that is moved. BR-13 does not change (one cancelled, one created).
+      const overlap = checkStudentOverlap(await activeRanges(tx, user.id, booking.id), target);
+      if (!overlap.ok) throw new RuleError(overlap.status, { error: overlap.error, code: overlap.code });
+
+      await lockSlot(tx, target.id);
+      const current = await tx.slot.findUnique({ where: { id: target.id }, include: { bookings: { where: { status: "ACTIVE" } } } });
+      if (!current || current.removedAt) throw new RuleError(404, SLOT_NOT_FOUND);
+      if (current.bookings.length > 0) throw new RuleError(409, SLOT_TAKEN);
+
+      const cancelled = await tx.booking.updateMany({
+        where: { id: booking.id, status: "ACTIVE" },
+        data: { status: "CANCELLED", cancelledAt: new Date(), cancelReason: "Moved to another slot", cancelledByRole: "STUDENT" },
+      });
+      if (cancelled.count === 0) throw new RuleError(409, NOT_ACTIVE);
+
+      return tx.booking.create({
+        data: { slotId: target.id, studentId: user.id, topic: booking.topic },
+        include: bookingInclude,
+      });
+    });
+    res.status(201).json(bookingShape(moved));
+  } catch (err) {
+    if (err instanceof RuleError) {
+      res.status(err.status).json(err.body);
+      return;
+    }
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      res.status(409).json(SLOT_TAKEN);
+      return;
+    }
+    throw err;
+  }
 });

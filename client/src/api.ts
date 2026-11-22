@@ -90,6 +90,8 @@ export const bookSlot = (slotId: number, topic: string) =>
   api<Booking>("/api/bookings", { method: "POST", body: { slotId, topic } });
 export const getMyBookings = () => api<Booking[]>("/api/bookings/mine");
 export const getBooking = (id: number) => api<Booking>(`/api/bookings/${id}`);
+export const moveBooking = (id: number, slotId: number) =>
+  api<Booking>(`/api/bookings/${id}/move`, { method: "POST", body: { slotId } });
 export const cancelBooking = (id: number, reason: string) =>
   api<Booking>(`/api/bookings/${id}/cancel`, { method: "POST", body: { reason } });
 
