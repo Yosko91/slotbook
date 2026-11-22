@@ -89,7 +89,7 @@ const detailInclude = {
 };
 
 // BR-12: the student of the booking or a tutor of the schedule. Everybody else gets null, so 404 (D-06).
-async function findVisibleBooking(rawId: string, user: { id: number; role: string }) {
+async function findVisibleBooking(rawId: unknown, user: { id: number; role: string }) {
   const id = Number(rawId);
   if (!Number.isInteger(id)) return null;
   const booking = await getPrisma().booking.findUnique({ where: { id }, include: detailInclude });
