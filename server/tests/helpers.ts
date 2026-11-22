@@ -51,3 +51,22 @@ export function inDays(days: number, time: string) {
   const day = bkk.toISOString().slice(0, 10);
   return new Date(`${day}T${time}:00+07:00`);
 }
+
+// Sprint 2 helpers
+export const HOUR = 60 * 60 * 1000;
+
+// a date some hours from now, rounded to the minute
+export function hoursFromNow(hours: number) {
+  return new Date(Math.floor((Date.now() + hours * HOUR) / 60000) * 60000);
+}
+
+// slots are inserted directly, so a test can make a slot that starts soon or in the past
+export function insertSlot(scheduleId: number, tutorId: number, startsAt: Date, minutes = 30) {
+  return getPrisma().slot.create({
+    data: { scheduleId, tutorId, startsAt, endsAt: new Date(startsAt.getTime() + minutes * 60000) },
+  });
+}
+
+export function insertBooking(slotId: number, studentId: number, status: "ACTIVE" | "CANCELLED" = "ACTIVE") {
+  return getPrisma().booking.create({ data: { slotId, studentId, topic: "Test topic for a booking", status } });
+}
