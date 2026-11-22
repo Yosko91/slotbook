@@ -126,8 +126,8 @@ test("TEST-70 student filters by tutor and by date, then clears (AC-45)", async 
   await expect(rows.filter({ hasText: TUTOR.name })).toHaveCount(0);
   await expect(rows.filter({ hasText: OTHER_TUTOR.name }).first()).toBeVisible();
 
-  await page.getByLabel("From").fill(bangkokDay(11));
-  await page.getByLabel("To").fill(bangkokDay(11));
+  await page.getByLabel("From", { exact: true }).fill(bangkokDay(11));
+  await page.getByLabel("To", { exact: true }).fill(bangkokDay(11));
   await expect(rows.filter({ hasText: fmtTime(slot.start) }).filter({ hasText: fmtDate(slot.start) })).toBeVisible();
   for (const text of await rows.allInnerTexts()) expect(text).toContain(fmtDate(slot.start));
   await page.screenshot({ path: `${SHOTS}/09-filters.png`, fullPage: true });
