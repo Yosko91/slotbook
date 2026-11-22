@@ -97,6 +97,7 @@ export const cancelBooking = (id: number, reason: string) =>
 
 export const getManagedSchedules =() => api<Schedule[]>("/api/staff/schedules");
 export const getScheduleSlots = (id: number) => api<Slot[]>(`/api/staff/schedules/${id}/slots`);
+export const removeSlot = (slotId: number) => api<void>(`/api/staff/slots/${slotId}`, { method: "DELETE" });
 export const createSlot = (id: number, startsAt: string, durationMinutes: number) =>
   api<Slot>(`/api/staff/schedules/${id}/slots`, { method: "POST", body: { startsAt, durationMinutes } });
 

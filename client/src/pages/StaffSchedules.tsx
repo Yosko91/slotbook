@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { FormEvent } from "react";
-import { ApiError, createSlot, getManagedSchedules, getScheduleSlots } from "../api";
+import { ApiError, createSlot, getManagedSchedules, getScheduleSlots, removeSlot } from "../api";
 import type { Schedule, Slot } from "../api";
 import { START_TIMES, bangkokDate, bangkokToIso, fmtDate, fmtTime } from "../time";
 
@@ -17,6 +17,8 @@ export default function StaffSchedules() {
   const [length, setLength] = useState(30);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+  const [confirmId, setConfirmId] = useState<number | null>(null);
+  const [removingId, setRemovingId] = useState<number | null>(null);
 
   useEffect(() => {
     getManagedSchedules()
@@ -54,6 +56,24 @@ export default function StaffSchedules() {
       else setError(err instanceof Error ? err.message : "Could not add the slot");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function confirmRemove(slotId: number) {
+    if (!scheduleId) return;
+    setError("");
+    setMessage("");
+    setRemovingId(slotId);
+    try {
+      await removeSlot(slotId);
+      setMessage("Slot removed.");
+    } catch (err) {
+      // 409: a student booked it meanwhile
+      setError(err instanceof Error ? err.message : "Could not remove the slot");
+    } finally {
+      setRemovingId(null);
+      setConfirmId(null);
+      loadSlots(scheduleId);
     }
   }
 
@@ -125,6 +145,7 @@ export default function StaffSchedules() {
               <th>Status</th>
               <th>Student</th>
               <th>Topic</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -141,6 +162,24 @@ export default function StaffSchedules() {
                 </td>
                 <td>{s.booking ? <Link to={`/bookings/${s.booking.id}`}>{s.booking.student.name}</Link> : "-"}</td>
                 <td>{s.booking?.topic ?? "-"}</td>
+                <td>
+                  {s.status === "OPEN" && new Date(s.startsAt).getTime() > Date.now() &&
+                    (confirmId === s.id ? (
+                      <span className="confirm">
+                        Remove this slot?{" "}
+                        <button onClick={() => confirmRemove(s.id)} disabled={removingId === s.id}>
+                          {removingId === s.id ? "Removing..." : "Yes, remove"}
+                        </button>{" "}
+                        <button className="secondary" onClick={() => setConfirmId(null)}>
+                          No
+                        </button>
+                      </span>
+                    ) : (
+                      <button className="secondary" onClick={() => setConfirmId(s.id)}>
+                        Remove
+                      </button>
+                    ))}
+                </td>
               </tr>
             ))}
           </tbody>
