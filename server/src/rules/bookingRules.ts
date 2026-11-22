@@ -33,3 +33,26 @@ export function validateReason(
   if (value.length > 200) return { ok: false, error: "Reason must have at most 200 characters" };
   return { ok: true, reason: value || null };
 }
+
+export const MAX_ACTIVE_UPCOMING = 3; // BR-13
+
+type Range = { startsAt: Date; endsAt: Date };
+export type LimitCheck = { ok: true } | { ok: false; status: 409 | 422; code: string; error: string };
+
+// F-07: existing = ACTIVE bookings of the student whose slot has not ended (the booking being moved is not in it)
+export function checkStudentLimits(existing: Range[], target: Range, now = new Date()): LimitCheck {
+  const upcoming = existing.filter((r) => r.startsAt.getTime() > now.getTime()).length;
+  if (upcoming >= MAX_ACTIVE_UPCOMING) {
+    return {
+      ok: false,
+      status: 422,
+      code: "BOOKING_LIMIT",
+      error: "You already have 3 upcoming bookings. Cancel one before you book another.",
+    };
+  }
+  // BR-14: same rule as BR-08, touching ranges are ok
+  if (existing.some((r) => r.startsAt < target.endsAt && target.startsAt < r.endsAt)) {
+    return { ok: false, status: 409, code: "BOOKING_OVERLAP", error: "You already have a booking at this time" };
+  }
+  return { ok: true };
+}
