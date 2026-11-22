@@ -1,0 +1,142 @@
+# CI for every Pull Request into main or a sprint staging branch (R-02, AC-47).
+# The job id "test-and-docker" is the required check of the branch ruleset, so do
+# not rename it. deploy.yml reuses this workflow (workflow_call).
+# Adapted from the TokTickIT Lab 5 workflow.
+name: CI & Docker Build
+
+on:
+  workflow_call:
+  pull_request:
+    branches: [main, "sprint-*-staging"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    # Throw-away database for the tests only (not a real secret).
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: slotbook
+          POSTGRES_PASSWORD: slotbook
+          POSTGRES_DB: slotbook
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://slotbook:slotbook@localhost:5432/slotbook?schema=public
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+
+      - name: Setup Python 3.14 (smoke test unit tests)
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.14"
+
+      - name: Deploy scripts - syntax and offline tests (no GCP access)
+        run: |
+          bash -n deploy/deploy.sh deploy/teardown.sh deploy/release.sh
+          bash deploy/tests/test_deploy_stub.sh
+          bash deploy/tests/test_release_stub.sh
+          python3 -m unittest discover -s deploy/tests -p 'test_smoke.py'
+
+      - name: Backend - typecheck, migrate, seed and test (Vitest + Supertest)
+        working-directory: ./server
+        run: |
+          npm ci
+          npx prisma generate
+          npm run typecheck
+          npx prisma migrate deploy
+          npm run seed
+          npm test
+
+      - name: Frontend - production build (tsc + Vite)
+        working-directory: ./client
+        run: |
+          npm ci
+          npm run build
+
+      - name: Build the production Docker image
+        run: docker build --build-arg COMMIT_SHA="${{ github.sha }}" -t slotbook:ci .
+
+      # TEST-64 (AC-46): fresh clone, only the .env.example values are used.
+      - name: Fresh clone runs with .env.example values
+        run: |
+          cp .env.example .env
+          docker compose up -d --build
+          curl --fail --silent --retry 20 --retry-delay 3 --retry-all-errors http://localhost:3000/api/ready
+          echo
+          curl --fail --silent http://localhost:3000/ | grep -qi "<html"
+          curl --fail --silent http://localhost:3000/api/version
+          echo
+          docker compose logs migrate | tail -n 3
+          docker compose down -v
+
+  # Browser journeys (TEST-08 ... TEST-71). Not a required check: it is slower,
+  # but its result is kept in the run for the report.
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: slotbook
+          POSTGRES_PASSWORD: slotbook
+          POSTGRES_DB: slotbook
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://slotbook:slotbook@localhost:5432/slotbook?schema=public
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+      - name: Install, migrate and seed
+        run: |
+          npm ci
+          (cd server && npm ci && npx prisma generate && npx prisma migrate deploy && npm run seed)
+          (cd client && npm ci)
+          npx playwright install --with-deps chromium
+      - name: Playwright
+        run: npx playwright test
+      - name: Keep the report and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4 # TODO pin to a commit SHA like the other actions
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            docs/sprints/*/evidence/screenshots
