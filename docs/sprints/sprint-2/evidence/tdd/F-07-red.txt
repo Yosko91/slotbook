@@ -1,0 +1,118 @@
+F-07 red - commit 1345fb44606b9bdb4d8da3415eb43352f63a01cd - 2026-11-22 09:58
+$ npx vitest run tests/limit-rules.unit.test.ts tests/limits.api.test.ts
+
+
+ RUN  v4.1.12 C:/Users/heloi/Documents/slotbook-repo/server
+
+ ✗ tests/limits.api.test.ts (4 tests | 3 failed) 1089ms
+     × TEST-54 a 4th active upcoming booking gives 422, after a cancel it works (AC-38) 225ms
+     ✓ TEST-55 cancelled and past bookings do not count (AC-39) 138ms
+     × TEST-56 overlap with an own booking in another schedule gives 409, touching is ok (AC-40) 121ms
+     × TEST-57 two bookings at the same time cannot pass the limit together (AC-41) 209ms
+ ✗ tests/limit-rules.unit.test.ts (2 tests | 2 failed) 5ms
+     × TEST-52 at most 3 active upcoming bookings, past ones do not count (BR-13) 3ms
+     × TEST-53 no overlap with another active booking, touching is ok (BR-14) 0ms
+node.exe : 
+Au caractère Ligne:1 : 1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+------- Failed Tests 5 -------
+
+ FAIL  tests/limit-rules.unit.test.ts > F-07 booking limits > TEST-52 at most 3 active upcoming bookings, past ones do 
+not count (BR-13)
+TypeError: checkStudentLimits is not a function
+ ✗ tests/limit-rules.unit.test.ts:14:12
+     12|   it("TEST-52 at most 3 active upcoming bookings, past ones do not couÔÇª
+     13|     const target = range(100);
+     14|     expect(checkStudentLimits([range(10), range(20)], target, now)).toÔÇª
+       |            ^
+     15|
+     16|     const full = checkStudentLimits([range(10), range(20), range(30)],ÔÇª
+
+------------------------[1/5]-
+
+ FAIL  tests/limit-rules.unit.test.ts > F-07 booking limits > TEST-53 no overlap with another active booking, touching 
+is ok (BR-14)
+TypeError: checkStudentLimits is not a function
+ ✗ tests/limit-rules.unit.test.ts:26:21
+     24|   it("TEST-53 no overlap with another active booking, touching is ok (ÔÇª
+     25|     const existing = [range(10, 60)]; // 10:00 to 11:00 (relative)
+     26|     const overlap = checkStudentLimits(existing, range(10.5, 30), now);
+       |                     ^
+     27|     expect(overlap).toMatchObject({ ok: false, status: 409, code: "BOOÔÇª
+     28|     expect(checkStudentLimits(existing, range(11, 30), now)).toEqual({ÔÇª
+
+------------------------[2/5]-
+
+ FAIL  tests/limits.api.test.ts > F-07 booking limits > TEST-54 a 4th active upcoming booking gives 422, after a 
+cancel it works (AC-38)
+AssertionError: expected 201 to be 422 // Object.is equality
+
+- Expected
++ Received
+
+- 422
++ 201
+
+ ✗ tests/limits.api.test.ts:45:28
+     43|
+     44|     const refused = await book(student, fourth.id);
+     45|     expect(refused.status).toBe(422);
+       |                            ^
+     46|     expect(refused.body).toEqual({
+     47|       error: "You already have 3 upcoming bookings. Cancel one before ÔÇª
+
+------------------------[3/5]-
+
+ FAIL  tests/limits.api.test.ts > F-07 booking limits > TEST-56 overlap with an own booking in another schedule gives 
+409, touching is ok (AC-40)
+AssertionError: expected 201 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 201
+
+ ✗ tests/limits.api.test.ts:76:28
+     74|
+     75|     const refused = await book(student, overlapping.id);
+     76|     expect(refused.status).toBe(409);
+       |                            ^
+     77|     expect(refused.body).toEqual({ error: "You already have a booking ÔÇª
+     78|     expect(await prisma.booking.count({ where: { slotId: overlapping.iÔÇª
+
+------------------------[4/5]-
+
+ FAIL  tests/limits.api.test.ts > F-07 booking limits > TEST-57 two bookings at the same time cannot pass the limit 
+together (AC-41)
+AssertionError: expected [ 201, 201 ] to deeply equal [ 201, 422 ]
+
+- Expected
++ Received
+
+  [
+    201,
+-   422,
++   201,
+  ]
+
+ ✗ tests/limits.api.test.ts:91:49
+     89|
+     90|     const results = await Promise.all([book(student, a.id), book(studeÔÇª
+     91|     expect(results.map((r) => r.status).sort()).toEqual([201, 422]);
+       |                                                 ^
+     92|     expect(await activeOf(student.id)).toBe(3);
+     93|   });
+
+------------------------[5/5]-
+
+
+ Test Files  2 failed (2)
+      Tests  5 failed | 1 passed (6)
+   Start at  09:58:02
+   Duration  2.03s (transform 180ms, setup 0ms, import 533ms, tests 1.09s, environment 0ms)
+

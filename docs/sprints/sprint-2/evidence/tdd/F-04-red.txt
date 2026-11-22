@@ -1,0 +1,178 @@
+F-04 red - commit 1c791b86ea90898856a28ab1679dde68a2f4460d - 2026-11-22 09:57
+$ npx vitest run tests/cancel-rules.unit.test.ts tests/cancel.api.test.ts
+
+
+ RUN  v4.1.12 C:/Users/heloi/Documents/slotbook-repo/server
+
+ ✗ tests/cancel.api.test.ts (6 tests | 6 failed) 755ms
+     × TEST-34 student cancels his booking 12 hours or more before the start (AC-22) 49ms
+     × TEST-35 student cancel less than 12 hours before the start gives 422 (AC-23) 55ms
+     × TEST-36 tutor cancels with a required reason, not after the start (AC-24) 9ms
+     × TEST-37 a booking that is already cancelled gives 409 (AC-25) 9ms
+     × TEST-38 other student and tutor of another schedule get 404, anonymous 401 (AC-26) 10ms
+     × TEST-39 after a cancel another student can book the same slot (AC-27) 7ms
+ ✗ tests/cancel-rules.unit.test.ts (2 tests | 2 failed) 5ms
+     × TEST-32 a student can change a booking until 12 hours before the start (BR-15) 3ms
+     × TEST-33 tutor reason is required (5 to 200), student reason is optional (max 200) 0ms
+node.exe : 
+Au caractère Ligne:1 : 1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+------- Failed Tests 8 -------
+
+ FAIL  tests/cancel-rules.unit.test.ts > F-04 cancel rules > TEST-32 a student can change a booking until 12 hours 
+before the start (BR-15)
+TypeError: canChangeBooking is not a function
+ ✗ tests/cancel-rules.unit.test.ts:9:12
+      7| describe("F-04 cancel rules", () => {
+      8|   it("TEST-32 a student can change a booking until 12 hours before theÔÇª
+      9|     expect(canChangeBooking(later(12 * 60), now)).toBe(true);
+       |            ^
+     10|     expect(canChangeBooking(later(12 * 60 - 1), now)).toBe(false);
+     11|     expect(canChangeBooking(later(-60), now)).toBe(false);
+
+------------------------[1/8]-
+
+ FAIL  tests/cancel-rules.unit.test.ts > F-04 cancel rules > TEST-33 tutor reason is required (5 to 200), student 
+reason is optional (max 200)
+TypeError: validateReason is not a function
+ ✗ tests/cancel-rules.unit.test.ts:15:12
+     13|
+     14|   it("TEST-33 tutor reason is required (5 to 200), student reason is oÔÇª
+     15|     expect(validateReason("abcd", "STAFF").ok).toBe(false);
+       |            ^
+     16|     expect(validateReason("abcde", "STAFF")).toEqual({ ok: true, reasoÔÇª
+     17|     expect(validateReason("a".repeat(200), "STAFF").ok).toBe(true);
+
+------------------------[2/8]-
+
+ FAIL  tests/cancel.api.test.ts > F-04 cancel a booking > TEST-34 student cancels his booking 12 hours or more before 
+the start (AC-22)
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ✗ tests/cancel.api.test.ts:49:24
+     47|
+     48|     const res = await cancel(studentA, booking.id, { reason: "I have aÔÇª
+     49|     expect(res.status).toBe(200);
+       |                        ^
+     50|     expect(res.body).toMatchObject({ id: booking.id, status: "CANCELLEÔÇª
+     51|
+
+------------------------[3/8]-
+
+ FAIL  tests/cancel.api.test.ts > F-04 cancel a booking > TEST-35 student cancel less than 12 hours before the start 
+gives 422 (AC-23)
+AssertionError: expected 404 to be 422 // Object.is equality
+
+- Expected
++ Received
+
+- 422
++ 404
+
+ ✗ tests/cancel.api.test.ts:69:24
+     67|
+     68|     const res = await cancel(studentA, booking.id);
+     69|     expect(res.status).toBe(422);
+       |                        ^
+     70|     expect(res.body.code).toBe("CANCEL_CLOSED");
+     71|     expect(await status(booking.id)).toBe("ACTIVE");
+
+------------------------[4/8]-
+
+ FAIL  tests/cancel.api.test.ts > F-04 cancel a booking > TEST-36 tutor cancels with a required reason, not after the 
+start (AC-24)
+AssertionError: expected 404 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 404
+
+ ✗ tests/cancel.api.test.ts:79:29
+     77|
+     78|     const noReason = await cancel(tutor, booking.id, {});
+     79|     expect(noReason.status).toBe(400);
+       |                             ^
+     80|     expect(noReason.body.details.reason).toBeDefined();
+     81|     expect(await status(booking.id)).toBe("ACTIVE");
+
+------------------------[5/8]-
+
+ FAIL  tests/cancel.api.test.ts > F-04 cancel a booking > TEST-37 a booking that is already cancelled gives 409 (AC-25)
+AssertionError: expected 404 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 404
+
+ ✗ tests/cancel.api.test.ts:101:24
+     99|
+    100|     const res = await cancel(studentA, booking.id);
+    101|     expect(res.status).toBe(409);
+       |                        ^
+    102|     expect(res.body.code).toBe("BOOKING_NOT_ACTIVE");
+    103|   });
+
+------------------------[6/8]-
+
+ FAIL  tests/cancel.api.test.ts > F-04 cancel a booking > TEST-38 other student and tutor of another schedule get 404, 
+anonymous 401 (AC-26)
+AssertionError: expected { error: 'Not found' } to deeply equal { error: 'Booking not found' }
+
+- Expected
++ Received
+
+  {
+-   "error": "Booking not found",
++   "error": "Not found",
+  }
+
+ ✗ tests/cancel.api.test.ts:111:22
+    109|     const asB = await cancel(studentB, booking.id);
+    110|     expect(asB.status).toBe(404);
+    111|     expect(asB.body).toEqual({ error: "Booking not found" });
+       |                      ^
+    112|     expect((await cancel(otherTutor, booking.id, { reason: "Not my schÔÇª
+    113|     expect((await cancel(null, booking.id)).status).toBe(401);
+
+------------------------[7/8]-
+
+ FAIL  tests/cancel.api.test.ts > F-04 cancel a booking > TEST-39 after a cancel another student can book the same 
+slot (AC-27)
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+
+ Test Files  2 failed (2)
+      Tests  8 failed (8)
+   Start at  09:57:54
+   Duration  1.70s (transform 176ms, setup 0ms, import 523ms, tests 760ms, environment 0ms)
+
+- 200
++ 404
+
+ ✗ tests/cancel.api.test.ts:121:57
+    119|     const slot = await insertSlot(schedule.id, tutor.id, inDays(4, "10ÔÇª
+    120|     const booking = await insertBooking(slot.id, studentA.id);
+    121|     expect((await cancel(studentA, booking.id)).status).toBe(200);
+       |                                                         ^
+    122|
+    123|     const res = await request(app)
+
+------------------------[8/8]-
+

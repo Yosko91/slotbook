@@ -1,0 +1,14 @@
+F-10 green - commit 7c0e144d9cfe23900b3b5b4eff7917411da76350 - 2026-11-22 10:11
+$ npx vitest run tests/attendance-rules.unit.test.ts tests/attendance.api.test.ts
+
+
+ RUN  v4.1.12 C:/Users/heloi/Documents/slotbook-repo/server
+
+ ✓ tests/attendance.api.test.ts (5 tests) 943ms
+ ✓ tests/attendance-rules.unit.test.ts (1 test) 3ms
+
+ Test Files  2 passed (2)
+      Tests  6 passed (6)
+   Start at  10:11:19
+   Duration  1.91s (transform 201ms, setup 0ms, import 582ms, tests 946ms, environment 0ms)
+

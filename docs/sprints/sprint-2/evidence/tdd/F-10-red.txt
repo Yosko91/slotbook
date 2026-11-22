@@ -1,0 +1,125 @@
+F-10 red - commit 5f569864424cb937d39fedc110312b58cb96daf0 - 2026-11-22 10:11
+$ npx vitest run tests/attendance-rules.unit.test.ts tests/attendance.api.test.ts
+
+
+ RUN  v4.1.12 C:/Users/heloi/Documents/slotbook-repo/server
+
+ ✗ tests/attendance.api.test.ts (5 tests | 4 failed) 795ms
+     × TEST-78 past sessions list: started in the last 30 days, newest first (AC-55) 125ms
+     × TEST-79 tutor records ATTENDED and the student sees it (AC-56) 32ms
+     × TEST-80 before the start 422, bad value 400, nothing stored (AC-57) 57ms
+     × TEST-81 only once, also at the same time, not for a cancelled booking (AC-58) 9ms
+     ✓ TEST-82 other tutor 404, student 403, anonymous 401 (AC-59) 21ms
+ ✗ tests/attendance-rules.unit.test.ts (0 test)
+node.exe : 
+Au caractère Ligne:1 : 1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+------ Failed Suites 1 -------
+
+ FAIL  tests/attendance-rules.unit.test.ts [ tests/attendance-rules.unit.test.ts ]
+Error: Cannot find module '../src/rules/attendanceRules.js' imported from 
+C:/Users/heloi/Documents/slotbook-repo/server/tests/attendance-rules.unit.test.ts
+ ✗ tests/attendance-rules.unit.test.ts:2:1
+      1| import { describe, expect, it } from "vitest";
+      2| import { canRecordAttendance, parseAttendance } from "../src/rules/attÔÇª
+       | ^
+      3|
+      4| describe("F-10 attendance rules", () => {
+
+------------------------[1/5]-
+
+
+------- Failed Tests 4 -------
+
+ FAIL  tests/attendance.api.test.ts > F-10 attendance > TEST-78 past sessions list: started in the last 30 days, 
+newest first (AC-55)
+AssertionError: expected [ 945 ] to deeply equal [ 942, 943 ]
+
+- Expected
++ Received
+
+  [
+-   942,
+-   943,
++   945,
+  ]
+
+ ✗ tests/attendance.api.test.ts:45:17
+     43|     expect(res.status).toBe(200);
+     44|     const ids = res.body.map((s: { id: number }) => s.id);
+     45|     expect(ids).toEqual([recent.slotId, older.id]);
+       |                 ^
+     46|     expect(ids).not.toContain(future.id);
+     47|     expect(res.body[0].booking).toMatchObject({ id: recent.id, attendaÔÇª
+
+------------------------[2/5]-
+
+ FAIL  tests/attendance.api.test.ts > F-10 attendance > TEST-79 tutor records ATTENDED and the student sees it (AC-56)
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ✗ tests/attendance.api.test.ts:58:24
+     56|
+     57|     const res = await record(tutor, booking.id, { status: "ATTENDED" }ÔÇª
+     58|     expect(res.status).toBe(200);
+       |                        ^
+     59|     expect(res.body).toMatchObject({ id: booking.id, attendance: "ATTEÔÇª
+     60|     expect(res.body.attendanceAt).toBeTruthy();
+
+------------------------[3/5]-
+
+ FAIL  tests/attendance.api.test.ts > F-10 attendance > TEST-80 before the start 422, bad value 400, nothing stored 
+(AC-57)
+AssertionError: expected 404 to be 422 // Object.is equality
+
+- Expected
++ Received
+
+- 422
++ 404
+
+ ✗ tests/attendance.api.test.ts:73:26
+     71|     const future = await insertBooking((await insertSlot(schedule.id, ÔÇª
+     72|     const early = await record(tutor, future.id, { status: "ATTENDED" ÔÇª
+     73|     expect(early.status).toBe(422);
+       |                          ^
+     74|     expect(early.body.code).toBe("ATTENDANCE_TOO_EARLY");
+     75|     expect(await attendanceOf(future.id)).toBeNull();
+
+------------------------[4/5]-
+
+ FAIL  tests/attendance.api.test.ts > F-10 attendance > TEST-81 only once, also at the same time, not for a cancelled 
+booking (AC-58)
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ✗ tests/attendance.api.test.ts:86:77
+     84|   it("TEST-81 only once, also at the same time, not for a cancelled boÔÇª
+     85|     const booking = await pastBooking(3);
+     86|     expect((await record(tutor, booking.id, { status: "NO_SHOW" })).stÔÇª
+       |                                                                             ^
+     87|     const again = await record(tutor, booking.id, { status: "ATTENDED"ÔÇª
+     88|     expect(again.status).toBe(409);
+
+------------------------[5/5]-
+
+
+ Test Files  2 failed (2)
+      Tests  4 failed | 1 passed (5)
+   Start at  10:11:16
+   Duration  1.75s (transform 190ms, setup 0ms, import 529ms, tests 795ms, environment 0ms)
+

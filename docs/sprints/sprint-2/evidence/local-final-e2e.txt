@@ -1,0 +1,19 @@
+$ npx playwright test --reporter=list
+(commit 278738346704f451ebb06c7e0523275fa04ff3fd, 2026-11-22 10:15)
+
+
+Running 10 tests using 1 worker
+
+  ok  1 [chromium] › e2e\sprint1.spec.ts:60:5 › TEST-08 login, header and logout (AC-01, AC-04) (1.3s)
+  ok  2 [chromium] › e2e\sprint1.spec.ts:76:5 › wrong password shows the error (AC-02) (733ms)
+  ok  3 [chromium] › e2e\sprint1.spec.ts:85:5 › TEST-19, TEST-30 tutor adds a slot, student books it, tutor sees the booking (4.3s)
+  ok  4 [chromium] › e2e\sprint1.spec.ts:149:5 › TEST-31 slot taken by another student while the page is open (AC-16) (1.4s)
+  ok  5 [chromium] › e2e\sprint1.spec.ts:179:5 › student cannot open the tutor page and the API refuses (AC-12, AC-21) (1.0s)
+  ok  6 [chromium] › e2e\sprint2.spec.ts:24:5 › TEST-67 student cancels a booking and the slot is open again (AC-22, AC-27) (2.2s)
+  ok  7 [chromium] › e2e\sprint2.spec.ts:60:5 › TEST-68 student moves a booking to another slot (AC-28) (2.0s)
+  ok  8 [chromium] › e2e\sprint2.spec.ts:92:5 › TEST-69 tutor removes an open slot (AC-34) (1.6s)
+  ok  9 [chromium] › e2e\sprint2.spec.ts:117:5 › TEST-70 student filters by tutor and by date, then clears (AC-45) (1.2s)
+  ok 10 [chromium] › e2e\sprint3.spec.ts:7:5 › TEST-83 tutor records attendance of a past session (AC-55, AC-56) (3.4s)
+
+  10 passed (25.8s)
+exit code: 0
