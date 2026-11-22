@@ -78,10 +78,11 @@ test("TEST-68 student moves a booking to another slot (AC-28)", async ({ page })
   await expect(page.locator("dl")).toContainText("Moving my session");
   await page.screenshot({ path: `${SHOTS}/05-booking-moved.png` });
 
+  // My bookings shows only the start time in the Time column
   await page.goto("/bookings");
-  const oldRow = page.locator("tr", { hasText: fmtDate(first.start) }).filter({ hasText: startText(first.start) });
+  const oldRow = page.locator("tr", { hasText: fmtDate(first.start) }).filter({ hasText: fmtTime(first.start) });
   await expect(oldRow).toContainText("Cancelled");
-  const newRow = page.locator("tr", { hasText: fmtDate(second.start) }).filter({ hasText: startText(second.start) });
+  const newRow = page.locator("tr", { hasText: fmtDate(second.start) }).filter({ hasText: fmtTime(second.start) });
   await expect(newRow).toContainText("Active");
   await page.screenshot({ path: `${SHOTS}/06-my-bookings-after-move.png`, fullPage: true });
   await tutorApi.dispose();

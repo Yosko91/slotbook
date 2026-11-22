@@ -158,7 +158,7 @@ test("TEST-31 slot taken by another student while the page is open (AC-16)", asy
 
   await login(page, OTHER_STUDENT.email);
   await page.getByLabel("Subject").selectOption({ label: "Calculus I" });
-  const slotRow = page.locator("tr", { hasText: fmtDate(free.start) }).filter({ hasText: fmtTime(free.start) }).filter({ hasText: TUTOR.name });
+  const slotRow = page.locator("tr", { hasText: fmtDate(free.start) }).filter({ hasText: `${fmtTime(free.start)} - ` }).filter({ hasText: TUTOR.name });
   await slotRow.getByRole("button", { name: "Book" }).click();
   await page.getByLabel(/What do you need help with/).fill("Limits and continuity");
 

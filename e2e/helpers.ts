@@ -76,26 +76,10 @@ export async function resetStudents(...emails: string[]) {
   }
 }
 
-// Clean data of earlier E2E runs: cancel the bookings of the seeded students, then the seeded
-// tutors remove (F-06) their open Calculus I slots from day 6 on (the seed only makes days 1 to 5).
-// Like this an old open slot at a close time cannot match the locators of a new run.
+// Clean data of earlier E2E runs: cancel the bookings of the seeded students (BR-13 allows only 3).
+// The old slots stay, so a new run always takes a new free time (no duplicate rows in My bookings).
 export async function resetE2EData() {
   await resetStudents(STUDENT.email, OTHER_STUDENT.email);
-  const firstE2EDay = new Date(`${bangkokDay(6)}T00:00:00+07:00`).getTime();
-  for (const tutor of [TUTOR, OTHER_TUTOR]) {
-    const api = await apiAs(tutor.email);
-    const scheduleId = await calculusId(api);
-    const slots: { id: number; startsAt: string; status: string; tutor: { id: number } }[] = await (
-      await api.get(`/api/staff/schedules/${scheduleId}/slots`)
-    ).json();
-    const me: { id: number } = await (await api.get("/api/auth/me")).json();
-    for (const s of slots) {
-      if (s.status === "OPEN" && s.tutor.id === me.id && new Date(s.startsAt).getTime() >= firstE2EDay) {
-        await api.delete(`/api/staff/slots/${s.id}`);
-      }
-    }
-    await api.dispose();
-  }
 }
 
 // "10:00 - " matches the start time only (not a slot that ends at 10:00)
