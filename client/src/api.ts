@@ -85,7 +85,21 @@ export interface Booking {
 }
 
 export const getSchedules = () => api<Schedule[]>("/api/schedules");
-export const getAvailableSlots = (id: number) => api<AvailableSlot[]>(`/api/schedules/${id}/available-slots`);
+export interface SlotFilter {
+  from?: string;
+  to?: string;
+  tutorId?: number;
+}
+
+export function getAvailableSlots(id: number, filter: SlotFilter = {}) {
+  const params = new URLSearchParams();
+  if (filter.from) params.set("from", filter.from);
+  if (filter.to) params.set("to", filter.to);
+  if (filter.tutorId) params.set("tutorId", String(filter.tutorId));
+  const query = params.toString();
+  return api<AvailableSlot[]>(`/api/schedules/${id}/available-slots${query ? `?${query}` : ""}`);
+}
+export const getScheduleTutors = (id: number) => api<{ id: number; name: string }[]>(`/api/schedules/${id}/tutors`);
 export const bookSlot = (slotId: number, topic: string) =>
   api<Booking>("/api/bookings", { method: "POST", body: { slotId, topic } });
 export const getMyBookings = () => api<Booking[]>("/api/bookings/mine");

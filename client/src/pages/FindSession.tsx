@@ -1,8 +1,8 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { ApiError, bookSlot, getAvailableSlots, getSchedules } from "../api";
-import type { AvailableSlot, Schedule } from "../api";
+import { ApiError, bookSlot, getAvailableSlots, getScheduleTutors, getSchedules } from "../api";
+import type { AvailableSlot, Schedule, SlotFilter } from "../api";
 import { fmtDate, fmtTime } from "../time";
 
 export default function FindSession() {
@@ -11,6 +11,11 @@ export default function FindSession() {
   const [scheduleId, setScheduleId] = useState<number | null>(null);
   const [slots, setSlots] = useState<AvailableSlot[] | null>(null);
   const [error, setError] = useState("");
+  const [tutors, setTutors] = useState<{ id: number; name: string }[]>([]);
+  const [filter, setFilter] = useState<SlotFilter>({});
+  const hasFilter = Boolean(filter.from || filter.to || filter.tutorId);
+  // only the answer of the last request is shown (filters can change fast)
+  const lastRequest = useRef(0);
 
   const [selected, setSelected] = useState<number | null>(null);
   const [topic, setTopic] = useState("");
@@ -26,16 +31,40 @@ export default function FindSession() {
       .catch((e) => setError(e.message));
   }, []);
 
-  function loadSlots(id: number) {
+  function loadSlots(id: number, f: SlotFilter = filter) {
+    const requestId = ++lastRequest.current;
     setSlots(null);
-    getAvailableSlots(id)
-      .then(setSlots)
-      .catch((e) => setError(e.message));
+    getAvailableSlots(id, f)
+      .then((list) => {
+        if (requestId === lastRequest.current) setSlots(list);
+      })
+      .catch((e) => {
+        if (requestId !== lastRequest.current) return;
+        setSlots([]);
+        setError(e.message);
+      });
   }
 
+  // a new subject: tutors of this subject, filters reset
   useEffect(() => {
-    if (scheduleId) loadSlots(scheduleId);
+    if (!scheduleId) return;
+    setFilter({});
+    setTutors([]);
+    getScheduleTutors(scheduleId)
+      .then(setTutors)
+      .catch((e) => setError(e.message));
   }, [scheduleId]);
+
+  useEffect(() => {
+    if (!scheduleId) return;
+    setError("");
+    loadSlots(scheduleId, filter);
+  }, [scheduleId, filter]);
+
+  function changeFilter(change: SlotFilter) {
+    setSelected(null);
+    setFilter((f) => ({ ...f, ...change }));
+  }
 
   function openForm(slotId: number) {
     setSelected(slotId);
@@ -83,12 +112,42 @@ export default function FindSession() {
         </select>
       </label>
 
+      <div className="row-form filters">
+        <label>
+          From
+          <input type="date" value={filter.from ?? ""} onChange={(e) => changeFilter({ from: e.target.value || undefined })} />
+        </label>
+        <label>
+          To
+          <input type="date" value={filter.to ?? ""} onChange={(e) => changeFilter({ to: e.target.value || undefined })} />
+        </label>
+        <label>
+          Tutor
+          <select
+            value={filter.tutorId ?? ""}
+            onChange={(e) => changeFilter({ tutorId: e.target.value ? Number(e.target.value) : undefined })}
+          >
+            <option value="">All tutors</option>
+            {tutors.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div style={{ alignSelf: "center" }}>
+          <button type="button" className="secondary" onClick={() => setFilter({})} disabled={!hasFilter}>
+            Clear filters
+          </button>
+        </div>
+      </div>
+
       {error && <div className="error">{error}</div>}
 
       {!slots ? (
         <p className="loading">Loading...</p>
       ) : slots.length === 0 ? (
-        <p className="empty">No available slot for this schedule.</p>
+        <p className="empty">{hasFilter ? "No available slot for these filters." : "No available slot for this schedule."}</p>
       ) : (
         <table>
           <thead>

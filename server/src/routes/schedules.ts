@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { getPrisma } from "../prisma.js";
+import { parseAvailabilityFilter } from "../rules/filterRules.js";
 
 export const schedulesRouter = Router();
 
@@ -12,7 +13,28 @@ schedulesRouter.get("/", async (_req, res) => {
   res.json(schedules);
 });
 
-// FR-06: open slots that can still be booked (BR-09, BR-10)
+async function activeSchedule(rawId: string) {
+  const id = Number(rawId);
+  const schedule = Number.isInteger(id) ? await getPrisma().schedule.findUnique({ where: { id } }) : null;
+  return schedule && schedule.isActive ? schedule : null;
+}
+
+// F-08: tutors of the schedule, for the Tutor filter
+schedulesRouter.get("/:id/tutors", async (req, res) => {
+  const schedule = await activeSchedule(req.params.id);
+  if (!schedule) {
+    res.status(404).json({ error: "Schedule not found" });
+    return;
+  }
+  const links = await getPrisma().scheduleStaff.findMany({
+    where: { scheduleId: schedule.id },
+    select: { staff: { select: { id: true, name: true } } },
+    orderBy: { staff: { name: "asc" } },
+  });
+  res.json(links.map((l) => l.staff));
+});
+
+// FR-06: open slots that can still be booked (BR-09, BR-10), FR-12: optional filters
 schedulesRouter.get("/:id/available-slots", async (req, res) => {
   const id = Number(req.params.id);
   const prisma = getPrisma();
@@ -22,11 +44,23 @@ schedulesRouter.get("/:id/available-slots", async (req, res) => {
     return;
   }
 
+  const parsed = parseAvailabilityFilter(req.query as Record<string, unknown>);
+  if (!parsed.ok) {
+    res.status(400).json({ error: "Validation failed", details: parsed.details });
+    return;
+  }
+  const { startsFrom, startsBefore, tutorId } = parsed.filter;
+  const openFrom = new Date(Date.now() + 60 * 60 * 1000);
+
   const slots = await prisma.slot.findMany({
     where: {
       scheduleId: id,
       removedAt: null,
-      startsAt: { gte: new Date(Date.now() + 60 * 60 * 1000) },
+      ...(tutorId ? { tutorId } : {}),
+      startsAt: {
+        gte: startsFrom && startsFrom > openFrom ? startsFrom : openFrom,
+        ...(startsBefore ? { lt: startsBefore } : {}),
+      },
       bookings: { none: { status: "ACTIVE" } },
     },
     include: { tutor: true },
