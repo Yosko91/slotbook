@@ -10,14 +10,15 @@ import {
   fmtDate,
   fmtTime,
   login,
-  resetStudents,
+  resetE2EData,
+  startText,
 } from "./helpers";
 
 const SHOTS = "docs/sprints/sprint-2/evidence/screenshots";
 
 // own days (8 to 11), so they do not collide with the Sprint 1 E2E (days 6 and 7)
 test.beforeAll(async () => {
-  await resetStudents(STUDENT.email);
+  await resetE2EData();
 });
 
 test("TEST-67 student cancels a booking and the slot is open again (AC-22, AC-27)", async ({ page }) => {
@@ -49,7 +50,7 @@ test("TEST-67 student cancels a booking and the slot is open again (AC-22, AC-27
   // the slot is offered again (AC-27)
   await page.goto("/slots");
   await page.getByLabel("Subject").selectOption({ label: "Calculus I" });
-  const row = page.locator("tr", { hasText: fmtDate(slot.start) }).filter({ hasText: fmtTime(slot.start) }).filter({ hasText: TUTOR.name });
+  const row = page.locator("tr", { hasText: fmtDate(slot.start) }).filter({ hasText: startText(slot.start) }).filter({ hasText: TUTOR.name });
   await expect(row.getByRole("button", { name: "Book" })).toBeVisible();
   await page.screenshot({ path: `${SHOTS}/03-slot-open-again.png`, fullPage: true });
   await tutorApi.dispose();
@@ -67,7 +68,7 @@ test("TEST-68 student moves a booking to another slot (AC-28)", async ({ page })
   await login(page, STUDENT.email);
   await page.goto(`/bookings/${booking.id}`);
   await page.getByRole("button", { name: "Move to another slot" }).click();
-  const target = page.locator("tr", { hasText: fmtDate(second.start) }).filter({ hasText: fmtTime(second.start) }).filter({ hasText: TUTOR.name });
+  const target = page.locator("tr", { hasText: fmtDate(second.start) }).filter({ hasText: startText(second.start) }).filter({ hasText: TUTOR.name });
   await expect(target).toBeVisible();
   await page.screenshot({ path: `${SHOTS}/04-move-choose-slot.png`, fullPage: true });
   await target.getByRole("button", { name: "Move here" }).click();
@@ -78,9 +79,9 @@ test("TEST-68 student moves a booking to another slot (AC-28)", async ({ page })
   await page.screenshot({ path: `${SHOTS}/05-booking-moved.png` });
 
   await page.goto("/bookings");
-  const oldRow = page.locator("tr", { hasText: fmtDate(first.start) }).filter({ hasText: fmtTime(first.start) });
+  const oldRow = page.locator("tr", { hasText: fmtDate(first.start) }).filter({ hasText: startText(first.start) });
   await expect(oldRow).toContainText("Cancelled");
-  const newRow = page.locator("tr", { hasText: fmtDate(second.start) }).filter({ hasText: fmtTime(second.start) });
+  const newRow = page.locator("tr", { hasText: fmtDate(second.start) }).filter({ hasText: startText(second.start) });
   await expect(newRow).toContainText("Active");
   await page.screenshot({ path: `${SHOTS}/06-my-bookings-after-move.png`, fullPage: true });
   await tutorApi.dispose();
@@ -94,7 +95,7 @@ test("TEST-69 tutor removes an open slot (AC-34)", async ({ page }) => {
 
   await login(page, TUTOR.email);
   await page.getByLabel("Schedule").selectOption({ label: "Calculus I" });
-  const row = page.locator("tr", { hasText: fmtDate(slot.start) }).filter({ hasText: fmtTime(slot.start) });
+  const row = page.locator("tr", { hasText: fmtDate(slot.start) }).filter({ hasText: startText(slot.start) });
   await row.getByRole("button", { name: "Remove" }).click();
   await expect(row).toContainText("Remove this slot?");
   await page.screenshot({ path: `${SHOTS}/07-remove-confirm.png`, fullPage: true });
@@ -128,7 +129,7 @@ test("TEST-70 student filters by tutor and by date, then clears (AC-45)", async 
 
   await page.getByLabel("From", { exact: true }).fill(bangkokDay(11));
   await page.getByLabel("To", { exact: true }).fill(bangkokDay(11));
-  await expect(rows.filter({ hasText: fmtTime(slot.start) }).filter({ hasText: fmtDate(slot.start) })).toBeVisible();
+  await expect(rows.filter({ hasText: startText(slot.start) }).filter({ hasText: fmtDate(slot.start) })).toBeVisible();
   for (const text of await rows.allInnerTexts()) expect(text).toContain(fmtDate(slot.start));
   await page.screenshot({ path: `${SHOTS}/09-filters.png`, fullPage: true });
 

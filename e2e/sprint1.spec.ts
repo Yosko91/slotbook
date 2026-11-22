@@ -1,7 +1,7 @@
 import { expect, request, test } from "@playwright/test";
 import type { APIRequestContext, Page } from "@playwright/test";
 import { API_URL } from "../playwright.config";
-import { resetStudents } from "./helpers";
+import { resetE2EData } from "./helpers";
 
 // seeded accounts (server/prisma/seed.ts), local development only
 const PASSWORD = "SlotBook!2026";
@@ -10,10 +10,10 @@ const STUDENT = { email: "ploy@slotbook.dev", name: "Ploy Chaiyaporn" };
 const OTHER_STUDENT = { email: "kevin@slotbook.dev", name: "Kevin Martin" };
 const SHOTS = "docs/sprints/sprint-1/evidence/screenshots";
 
-// Sprint 2 change (F-07, max 3 upcoming bookings): cancel the bookings left by earlier runs.
-// Only the setup is added, the steps and assertions of the Sprint 1 tests are not changed.
+// Sprint 2 change (F-07, max 3 upcoming bookings): clean the bookings and open slots left by
+// earlier runs. Only the setup is added, the steps and assertions of the Sprint 1 tests are not changed.
 test.beforeAll(async () => {
-  await resetStudents(STUDENT.email, OTHER_STUDENT.email);
+  await resetE2EData();
 });
 
 const TZ = "Asia/Bangkok";
