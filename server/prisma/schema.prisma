@@ -65,6 +65,8 @@ model Slot {
   startsAt   DateTime
   endsAt     DateTime
   createdAt  DateTime @default(now())
+  // F-06: soft delete, so cancelled bookings keep their slot (history for F-11)
+  removedAt  DateTime?
   schedule   Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
   tutor      User     @relation(fields: [tutorId], references: [id], onDelete: Cascade)
   bookings   Booking[]
@@ -73,7 +75,7 @@ model Slot {
   @@index([scheduleId, startsAt])
 }
 
-// CANCELLED is used from Sprint 2 (F-04)
+// CANCELLED is used from Sprint 2 (F-04, F-05)
 enum BookingStatus {
   ACTIVE
   CANCELLED
@@ -88,6 +90,10 @@ model Booking {
   topic     String
   status    BookingStatus @default(ACTIVE)
   createdAt DateTime      @default(now())
+  // F-04: who cancelled, when and why (the row is never deleted)
+  cancelledAt     DateTime?
+  cancelReason    String?
+  cancelledByRole Role?
   slot      Slot          @relation(fields: [slotId], references: [id], onDelete: Cascade)
   student   User          @relation(fields: [studentId], references: [id], onDelete: Cascade)
 

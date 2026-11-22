@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import type { FormEvent } from "react";
 import { ApiError, createSlot, getManagedSchedules, getScheduleSlots } from "../api";
 import type { Schedule, Slot } from "../api";
@@ -138,7 +139,7 @@ export default function StaffSchedules() {
                 <td>
                   <span className={`badge ${s.status.toLowerCase()}`}>{s.status === "OPEN" ? "Open" : "Booked"}</span>
                 </td>
-                <td>{s.booking?.student.name ?? "-"}</td>
+                <td>{s.booking ? <Link to={`/bookings/${s.booking.id}`}>{s.booking.student.name}</Link> : "-"}</td>
                 <td>{s.booking?.topic ?? "-"}</td>
               </tr>
             ))}
