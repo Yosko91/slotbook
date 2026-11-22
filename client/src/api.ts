@@ -54,7 +54,7 @@ export interface Slot {
   durationMinutes: number;
   tutor: { id: number; name: string };
   status: "OPEN" | "BOOKED";
-  booking: null | { id: number; topic: string; student: { id: number; name: string; email: string } };
+  booking: null | { id: number; topic: string; attendance: Attendance | null; student: { id: number; name: string; email: string } };
 }
 
 export interface AvailableSlot {
@@ -65,6 +65,8 @@ export interface AvailableSlot {
   tutor: { id: number; name: string };
 }
 
+export type Attendance = "ATTENDED" | "NO_SHOW";
+
 export interface Booking {
   id: number;
   status: "ACTIVE" | "CANCELLED";
@@ -73,6 +75,8 @@ export interface Booking {
   cancelledAt: string | null;
   cancelReason: string | null;
   cancelledBy: Role | null;
+  attendance: Attendance | null;
+  attendanceAt: string | null;
   student: { id: number; name: string };
   slot: {
     id: number;
@@ -110,7 +114,10 @@ export const cancelBooking = (id: number, reason: string) =>
   api<Booking>(`/api/bookings/${id}/cancel`, { method: "POST", body: { reason } });
 
 export const getManagedSchedules =() => api<Schedule[]>("/api/staff/schedules");
-export const getScheduleSlots = (id: number) => api<Slot[]>(`/api/staff/schedules/${id}/slots`);
+export const getScheduleSlots = (id: number, period: "upcoming" | "past" = "upcoming") =>
+  api<Slot[]>(`/api/staff/schedules/${id}/slots${period === "past" ? "?period=past" : ""}`);
+export const recordAttendance = (bookingId: number, status: Attendance) =>
+  api<Booking>(`/api/staff/bookings/${bookingId}/attendance`, { method: "POST", body: { status } });
 export const removeSlot = (slotId: number) => api<void>(`/api/staff/slots/${slotId}`, { method: "DELETE" });
 export const createSlot = (id: number, startsAt: string, durationMinutes: number) =>
   api<Slot>(`/api/staff/schedules/${id}/slots`, { method: "POST", body: { startsAt, durationMinutes } });

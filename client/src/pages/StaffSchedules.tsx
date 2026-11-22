@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { FormEvent } from "react";
-import { ApiError, createSlot, getManagedSchedules, getScheduleSlots, removeSlot } from "../api";
-import type { Schedule, Slot } from "../api";
-import { START_TIMES, bangkokDate, bangkokToIso, fmtDate, fmtTime } from "../time";
+import { ApiError, createSlot, getManagedSchedules, getScheduleSlots, recordAttendance, removeSlot } from "../api";
+import type { Attendance, Schedule, Slot } from "../api";
+import { START_TIMES, attendanceLabel, bangkokDate, bangkokToIso, fmtDate, fmtTime } from "../time";
 
 export default function StaffSchedules() {
   const [schedules, setSchedules] = useState<Schedule[] | null>(null);
@@ -18,6 +18,8 @@ export default function StaffSchedules() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [confirmId, setConfirmId] = useState<number | null>(null);
+  const [view, setView] = useState<"upcoming" | "past">("upcoming");
+  const [marking, setMarking] = useState<number | null>(null);
   const [removingId, setRemovingId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -29,16 +31,39 @@ export default function StaffSchedules() {
       .catch((e) => setError(e.message));
   }, []);
 
-  function loadSlots(id: number) {
+  function loadSlots(id: number, which = view) {
     setSlots(null);
-    getScheduleSlots(id)
+    getScheduleSlots(id, which)
       .then(setSlots)
       .catch((e) => setError(e.message));
   }
 
   useEffect(() => {
-    if (scheduleId) loadSlots(scheduleId);
-  }, [scheduleId]);
+    if (scheduleId) loadSlots(scheduleId, view);
+  }, [scheduleId, view]);
+
+  function showView(next: "upcoming" | "past") {
+    setError("");
+    setMessage("");
+    setView(next);
+  }
+
+  // F-10: the API refuses before the start and a second record (409)
+  async function mark(slot: Slot, status: Attendance) {
+    if (!slot.booking || !scheduleId) return;
+    setError("");
+    setMessage("");
+    setMarking(slot.booking.id);
+    try {
+      await recordAttendance(slot.booking.id, status);
+      setMessage(`Attendance recorded for ${slot.booking.student.name}.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not record the attendance");
+    } finally {
+      setMarking(null);
+      loadSlots(scheduleId, "past");
+    }
+  }
 
   async function addSlot(e: FormEvent) {
     e.preventDefault();
@@ -94,6 +119,16 @@ export default function StaffSchedules() {
         </select>
       </label>
 
+      <div className="actions tabs">
+        <button className={view === "upcoming" ? "" : "secondary"} onClick={() => showView("upcoming")}>
+          Upcoming
+        </button>
+        <button className={view === "past" ? "" : "secondary"} onClick={() => showView("past")}>
+          Past sessions
+        </button>
+      </div>
+
+      {view === "upcoming" && (
       <div className="card">
         <h3>Add a slot</h3>
         <form className="row-form" onSubmit={addSlot}>
@@ -125,12 +160,66 @@ export default function StaffSchedules() {
           </div>
         </form>
       </div>
+      )}
 
       {error && <div className="error">{error}</div>}
       {message && <div className="success">{message}</div>}
 
-      <h3>Upcoming slots</h3>
-      {!slots ? (
+      {view === "past" && (
+        <>
+          <h3>Past sessions (last 30 days)</h3>
+          {!slots ? (
+            <p className="loading">Loading...</p>
+          ) : slots.length === 0 ? (
+            <p className="empty">No past session in the last 30 days.</p>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Time</th>
+                  <th>Tutor</th>
+                  <th>Student</th>
+                  <th>Topic</th>
+                  <th>Attendance</th>
+                </tr>
+              </thead>
+              <tbody>
+                {slots.map((s) => (
+                  <tr key={s.id}>
+                    <td>{fmtDate(s.startsAt)}</td>
+                    <td>
+                      {fmtTime(s.startsAt)} - {fmtTime(s.endsAt)}
+                    </td>
+                    <td>{s.tutor.name}</td>
+                    <td>{s.booking ? <Link to={`/bookings/${s.booking.id}`}>{s.booking.student.name}</Link> : "-"}</td>
+                    <td>{s.booking?.topic ?? "-"}</td>
+                    <td>
+                      {!s.booking ? (
+                        "-"
+                      ) : s.booking.attendance ? (
+                        attendanceLabel(s.booking.attendance, s.startsAt)
+                      ) : (
+                        <span className="confirm">
+                          <button onClick={() => mark(s, "ATTENDED")} disabled={marking === s.booking.id}>
+                            Attended
+                          </button>{" "}
+                          <button className="secondary" onClick={() => mark(s, "NO_SHOW")} disabled={marking === s.booking.id}>
+                            No-show
+                          </button>
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </>
+      )}
+
+      {view === "upcoming" && <h3>Upcoming slots</h3>}
+      {view === "past" ? null : !slots ? (
         <p className="loading">Loading...</p>
       ) : slots.length === 0 ? (
         <p className="empty">No upcoming slot. Add one with the form.</p>

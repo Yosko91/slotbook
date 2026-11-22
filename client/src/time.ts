@@ -18,3 +18,6 @@ export const START_TIMES = Array.from({ length: 24 }, (_, i) => {
   const h = String(8 + Math.floor(i / 2)).padStart(2, "0");
   return `${h}:${i % 2 ? "30" : "00"}`;
 });
+
+export const attendanceLabel = (a: "ATTENDED" | "NO_SHOW" | null, startsAt: string) =>
+  a === "ATTENDED" ? "Attended" : a === "NO_SHOW" ? "No-show" : new Date(startsAt).getTime() <= Date.now() ? "Not recorded" : "-";

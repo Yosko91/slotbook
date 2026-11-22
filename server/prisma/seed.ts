@@ -66,7 +66,21 @@ async function main() {
       created++;
     }
   }
-  console.log(`Seed done: ${USERS.length} users, ${SCHEDULES.length} schedules, ${created} new slots`);
+  // F-10 demo: one past session of yesterday 10:00, booked by Nattapong, so the tutor can record attendance
+  const pastStart = bangkok(-1, "10:00");
+  const somchai = ids["somchai.tutor@slotbook.dev"]!;
+  let pastCreated = 0;
+  const existingPast = await prisma.slot.findFirst({ where: { tutorId: somchai, startsAt: pastStart } });
+  if (!existingPast) {
+    const slot = await prisma.slot.create({
+      data: { scheduleId: scheduleIds["Calculus I"]!, tutorId: somchai, startsAt: pastStart, endsAt: new Date(pastStart.getTime() + 60 * 60000) },
+    });
+    await prisma.booking.create({
+      data: { slotId: slot.id, studentId: ids["nattapong@slotbook.dev"]!, topic: "Review of limits before the quiz" },
+    });
+    pastCreated = 1;
+  }
+  console.log(`Seed done: ${USERS.length} users, ${SCHEDULES.length} schedules, ${created} new slots, ${pastCreated} new past session`);
 }
 
 const SCHEDULES = [
