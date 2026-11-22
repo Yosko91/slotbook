@@ -1,6 +1,6 @@
 import { execSync } from "node:child_process";
 import { expect, test } from "@playwright/test";
-import { OTHER_STUDENT, TUTOR, fmtDate, fmtTime, login } from "./helpers";
+import { OTHER_STUDENT, TUTOR, fmtDate, login, startText } from "./helpers";
 
 const SHOTS = "docs/sprints/sprint-3/evidence/screenshots";
 
@@ -12,7 +12,7 @@ test("TEST-83 tutor records attendance of a past session (AC-55, AC-56)", async 
   await login(page, TUTOR.email);
   await page.getByLabel("Schedule").selectOption({ label: "Calculus I" });
   await page.getByRole("button", { name: "Past sessions" }).click();
-  const row = page.locator("tr", { hasText: fmtDate(start) }).filter({ hasText: fmtTime(start) }).filter({ hasText: OTHER_STUDENT.name });
+  const row = page.locator("tr", { hasText: fmtDate(start) }).filter({ hasText: startText(start) }).filter({ hasText: OTHER_STUDENT.name });
   await expect(row.getByRole("button", { name: "Attended" })).toBeVisible();
   await page.screenshot({ path: `${SHOTS}/01-past-sessions.png`, fullPage: true });
 
