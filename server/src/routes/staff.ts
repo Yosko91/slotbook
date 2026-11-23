@@ -6,6 +6,7 @@ import { planWeeklySlots, validateSlot } from "../rules/slotRules.js";
 import { bookingInclude, bookingShape, slotInclude, slotShape } from "./shapes.js";
 import { RuleError, lockSlot, lockUser } from "../services/bookingTx.js";
 import { canRecordAttendance, parseAttendance } from "../rules/attendanceRules.js";
+import { parseSummaryRange, summarize } from "../rules/summaryRules.js";
 
 export const staffRouter = Router();
 staffRouter.use(requireRole("STAFF"));
@@ -129,6 +130,25 @@ staffRouter.post("/schedules/:id/slots/weekly", async (req, res) => {
     }
     throw err;
   }
+});
+
+// F-11: counts of the schedule for a period of Bangkok days (AC-60 to AC-63)
+staffRouter.get("/schedules/:id/summary", async (req, res) => {
+  const schedule = await managedSchedule(req, res);
+  if (!schedule) return;
+
+  const parsed = parseSummaryRange(req.query as Record<string, unknown>);
+  if (!parsed.ok) {
+    res.status(400).json({ error: "Validation failed", details: parsed.details });
+    return;
+  }
+  const { from, to, startsFrom, startsBefore } = parsed.range;
+  // removed slots are not counted (AC-61)
+  const slots = await getPrisma().slot.findMany({
+    where: { scheduleId: schedule.id, removedAt: null, startsAt: { gte: startsFrom, lt: startsBefore } },
+    select: { bookings: { select: { status: true, attendance: true } } },
+  });
+  res.json({ from, to, ...summarize(slots) });
 });
 
 // F-06: soft delete of an open slot that has not started (BR-16)
