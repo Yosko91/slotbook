@@ -48,3 +48,45 @@ export function validateSlot(input: { startsAt: unknown; durationMinutes: unknow
 export function overlaps(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date) {
   return aStart < bEnd && bStart < aEnd;
 }
+
+// F-09: weekly series (FR-13). Thailand has no daylight saving (A-02), so +7 days keeps the same local time.
+const WEEK_MS = 7 * 24 * 60 * MINUTE;
+const WEEKS_ERROR = "Weeks must be a whole number from 2 to 8";
+
+export function parseWeeks(value: unknown): number | null {
+  return typeof value === "number" && Number.isInteger(value) && value >= 2 && value <= 8 ? value : null;
+}
+
+export function weeklyStarts(start: Date, weeks: number): Date[] {
+  return Array.from({ length: weeks }, (_, k) => new Date(start.getTime() + k * WEEK_MS));
+}
+
+export type WeekError = { week: number; startsAt: string; error: string };
+export type WeeklyPlan =
+  | { ok: true; slots: { startsAt: Date; endsAt: Date }[] }
+  | { ok: false; details: Record<string, string> }
+  | { ok: false; weeks: WeekError[] };
+
+// every week is checked with the same rules as one slot (BR-05 to BR-07); all or nothing
+export function planWeeklySlots(input: { startsAt: unknown; durationMinutes: unknown; weeks: unknown }, now = new Date()): WeeklyPlan {
+  const weeks = parseWeeks(input.weeks);
+  const first = validateSlot({ startsAt: input.startsAt, durationMinutes: input.durationMinutes }, now);
+  // a later week can only fail on the date limit, so the format errors come from the first slot
+  const firstFormat = !first.ok && first.errors.startsAt === "Start time must be within the next 60 days" && !first.errors.durationMinutes;
+  if (weeks === null || (!first.ok && !firstFormat)) {
+    const details: Record<string, string> = {};
+    if (weeks === null) details.weeks = WEEKS_ERROR;
+    if (!first.ok) Object.assign(details, first.errors);
+    return { ok: false, details };
+  }
+
+  const start = new Date(input.startsAt as string);
+  const slots: { startsAt: Date; endsAt: Date }[] = [];
+  const failed: WeekError[] = [];
+  weeklyStarts(start, weeks).forEach((d, k) => {
+    const check = validateSlot({ startsAt: d.toISOString(), durationMinutes: input.durationMinutes }, now);
+    if (check.ok) slots.push({ startsAt: check.startsAt, endsAt: check.endsAt });
+    else failed.push({ week: k + 1, startsAt: d.toISOString(), error: check.errors.startsAt ?? check.errors.durationMinutes ?? "Not valid" });
+  });
+  return failed.length > 0 ? { ok: false, weeks: failed } : { ok: true, slots };
+}
