@@ -3,6 +3,7 @@
 | Version | Date | Author | Change |
 |---|---|---|---|
 | 1.0 | 22 Nov 2026 | Heloise | First version. Status at the checkpoint of 29 Nov: planned. |
+| 1.1 | 23 Nov 2026 | Yohann MOSCATO, Heloise SAVOYE | Authors corrected: team document of both members (written by Heloise with AI assistance, reviewed and approved by Yohann in the PR). |
 
 Linked requirements: NFR-08, NFR-09. Responsibility, not a screen.
 

@@ -4,7 +4,7 @@ Version 2.0, 22 November 2026 (Deliverable 2). Version 1.0 (5 Nov) is kept in Gi
 
 One line per baseline requirement: requirement, feature or responsibility, sprint, acceptance criteria (or NFR check), planned tests, the actual test file, and the result with the version.
 
-Local run of 22 Nov 2026 on commit 2787383 (Windows 11, Node 24, PostgreSQL 17): typecheck OK, server 72/72 passed (16 files), client build OK, Playwright 10/10 passed on a fresh seeded database. Logs: docs/sprints/sprint-2/evidence/. The CI run on the release commit is added in the report.
+Local run of 22 Nov 2026 on commit 2787383 (Windows 11, Node 24, PostgreSQL 17): typecheck OK, server 72/72 passed (16 files), client build OK, Playwright 10/10 passed on a fresh seeded database. Logs: docs/sprints/sprint-2/evidence/. GitHub CI confirmation: run 45141574150 (PR #19) and run 45142422096 (release PR #20, commit e279602) passed test-and-docker (typecheck, migrate, seed, all server tests, client build, Docker build, fresh clone) and e2e (Playwright). Release tag v2.0.0-sprint2 = b731f38.
 
 Result words. "Passed v1.0.0-sprint1" = executed and passed on the Sprint 1 release (evidence in docs/sprints/sprint-1/evidence/final-test-run.txt). "Passed locally 2787383" = executed and passed in the local run above. "Planned" = the test is only in the STS. In the Deliverable 2 report, "Passed locally 2787383" is replaced by the real result (Passed / Failed / Skipped) and the commit of the run. We never use an unrelated green test as coverage.
 

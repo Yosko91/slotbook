@@ -3,6 +3,7 @@
 | Version | Date | Author | Change |
 |---|---|---|---|
 | 1.0 | 22 Nov 2026 | Heloise | First version, before implementation. |
+| 1.1 | 23 Nov 2026 | Yohann MOSCATO, Heloise SAVOYE | Authors corrected: team document of both members (written by Heloise with AI assistance, reviewed and approved by Yohann in the PR). |
 
 Linked requirements: FR-09, BR-15, BR-12. Part of R-01 (new access path).
 
