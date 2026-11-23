@@ -1,6 +1,7 @@
 import { expect, request, test } from "@playwright/test";
 import type { APIRequestContext, Page } from "@playwright/test";
 import { API_URL } from "../playwright.config";
+import { resetE2EData } from "./helpers";
 
 // seeded accounts (server/prisma/seed.ts), local development only
 const PASSWORD = "SlotBook!2026";
@@ -8,6 +9,12 @@ const TUTOR = { email: "somchai.tutor@slotbook.dev", name: "Somchai Wongsa" };
 const STUDENT = { email: "ploy@slotbook.dev", name: "Ploy Chaiyaporn" };
 const OTHER_STUDENT = { email: "kevin@slotbook.dev", name: "Kevin Martin" };
 const SHOTS = "docs/sprints/sprint-1/evidence/screenshots";
+
+// Sprint 2 change (F-07, max 3 upcoming bookings): clean the bookings and open slots left by
+// earlier runs. Only the setup is added, the steps and assertions of the Sprint 1 tests are not changed.
+test.beforeAll(async () => {
+  await resetE2EData();
+});
 
 const TZ = "Asia/Bangkok";
 const fmtDate = (d: Date) =>
@@ -151,7 +158,7 @@ test("TEST-31 slot taken by another student while the page is open (AC-16)", asy
 
   await login(page, OTHER_STUDENT.email);
   await page.getByLabel("Subject").selectOption({ label: "Calculus I" });
-  const slotRow = page.locator("tr", { hasText: fmtDate(free.start) }).filter({ hasText: fmtTime(free.start) }).filter({ hasText: TUTOR.name });
+  const slotRow = page.locator("tr", { hasText: fmtDate(free.start) }).filter({ hasText: `${fmtTime(free.start)} - ` }).filter({ hasText: TUTOR.name });
   await slotRow.getByRole("button", { name: "Book" }).click();
   await page.getByLabel(/What do you need help with/).fill("Limits and continuity");
 
