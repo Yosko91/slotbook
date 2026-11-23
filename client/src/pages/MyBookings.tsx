@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getMyBookings } from "../api";
 import type { Booking } from "../api";
-import { fmtDate, fmtTime } from "../time";
+import { attendanceLabel, fmtDate, fmtTime } from "../time";
 
 export default function MyBookings() {
   const [bookings, setBookings] = useState<Booking[] | null>(null);
@@ -32,6 +32,7 @@ export default function MyBookings() {
               <th>Tutor</th>
               <th>Topic</th>
               <th>Status</th>
+              <th>Attendance</th>
               <th></th>
             </tr>
           </thead>
@@ -44,6 +45,7 @@ export default function MyBookings() {
                 <td>{b.slot.tutor.name}</td>
                 <td>{b.topic}</td>
                 <td>{b.status === "ACTIVE" ? "Active" : "Cancelled"}</td>
+                <td>{b.status === "ACTIVE" ? attendanceLabel(b.attendance, b.slot.startsAt) : "-"}</td>
                 <td>
                   <Link to={`/bookings/${b.id}`}>View</Link>
                 </td>

@@ -3,8 +3,9 @@ import type { Request, Response } from "express";
 import { getPrisma } from "../prisma.js";
 import { requireRole } from "../middleware/auth.js";
 import { validateSlot } from "../rules/slotRules.js";
-import { slotShape, slotInclude } from "./shapes.js";
+import { bookingInclude, bookingShape, slotInclude, slotShape } from "./shapes.js";
 import { RuleError, lockSlot } from "../services/bookingTx.js";
+import { canRecordAttendance, parseAttendance } from "../rules/attendanceRules.js";
 
 export const staffRouter = Router();
 staffRouter.use(requireRole("STAFF"));
@@ -39,10 +40,20 @@ staffRouter.get("/schedules/:id/slots", async (req, res) => {
   const schedule = await managedSchedule(req, res);
   if (!schedule) return;
 
+  // F-10: ?period=past gives the slots that started in the last 30 days, newest first
+  const period = req.query.period ?? "upcoming";
+  if (period !== "upcoming" && period !== "past") {
+    res.status(400).json({ error: "Validation failed", details: { period: "period must be upcoming or past" } });
+    return;
+  }
+  const now = new Date();
   const slots = await getPrisma().slot.findMany({
-    where: { scheduleId: schedule.id, removedAt: null, endsAt: { gt: new Date() } },
+    where:
+      period === "past"
+        ? { scheduleId: schedule.id, removedAt: null, startsAt: { lte: now, gte: new Date(now.getTime() - 30 * 24 * 3600 * 1000) } }
+        : { scheduleId: schedule.id, removedAt: null, endsAt: { gt: now } },
     include: slotInclude,
-    orderBy: { startsAt: "asc" },
+    orderBy: { startsAt: period === "past" ? "desc" : "asc" },
   });
   res.json(slots.map(slotShape));
 });
@@ -113,4 +124,43 @@ staffRouter.delete("/slots/:id", async (req, res) => {
     throw err;
   }
   res.status(204).send();
+});
+
+// F-10: the tutor of the schedule records ATTENDED or NO_SHOW once, after the start (BR-17)
+staffRouter.post("/bookings/:id/attendance", async (req, res) => {
+  const id = Number(req.params.id);
+  const prisma = getPrisma();
+  const booking = Number.isInteger(id)
+    ? await prisma.booking.findUnique({ where: { id }, include: { slot: { include: { schedule: { include: { staff: true } } } } } })
+    : null;
+  // D-06: a booking of another schedule is "not found"
+  if (!booking || !booking.slot.schedule.staff.some((s) => s.staffId === req.user!.id)) {
+    res.status(404).json({ error: "Booking not found" });
+    return;
+  }
+  if (booking.status !== "ACTIVE") {
+    res.status(409).json({ error: "This booking is not active", code: "BOOKING_NOT_ACTIVE" });
+    return;
+  }
+  if (!canRecordAttendance(booking.slot.startsAt)) {
+    res.status(422).json({ error: "Attendance can be recorded only after the start", code: "ATTENDANCE_TOO_EARLY" });
+    return;
+  }
+  const value = parseAttendance(req.body?.status);
+  if (!value.ok) {
+    res.status(400).json({ error: "Validation failed", details: { status: value.error } });
+    return;
+  }
+
+  // only a row without attendance is changed, so two clicks at the same time give one 200 and one 409
+  const updated = await prisma.booking.updateMany({
+    where: { id: booking.id, status: "ACTIVE", attendance: null },
+    data: { attendance: value.value, attendanceAt: new Date() },
+  });
+  if (updated.count === 0) {
+    res.status(409).json({ error: "Attendance is already recorded", code: "ATTENDANCE_RECORDED" });
+    return;
+  }
+  const fresh = await prisma.booking.findUniqueOrThrow({ where: { id: booking.id }, include: bookingInclude });
+  res.json(bookingShape(fresh));
 });

@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { ApiError, cancelBooking, getAvailableSlots, getBooking, moveBooking } from "../api";
 import type { AvailableSlot, Booking } from "../api";
 import { useAuth } from "../auth";
-import { fmtDate, fmtTime } from "../time";
+import { attendanceLabel, fmtDate, fmtTime } from "../time";
 
 const TWELVE_HOURS = 12 * 60 * 60 * 1000;
 
@@ -121,6 +121,12 @@ export default function BookingDetail() {
           <dd>{booking.topic}</dd>
           <dt>Status</dt>
           <dd className="status">{active ? "Active" : "Cancelled"}</dd>
+          {active && (
+            <>
+              <dt>Attendance</dt>
+              <dd className="attendance">{attendanceLabel(booking.attendance, booking.slot.startsAt)}</dd>
+            </>
+          )}
           <dt>Booked on</dt>
           <dd>
             {fmtDate(booking.createdAt)} {fmtTime(booking.createdAt)}
