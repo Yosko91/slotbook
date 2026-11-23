@@ -25,6 +25,7 @@ schedulesRouter.get("/:id/available-slots", async (req, res) => {
   const slots = await prisma.slot.findMany({
     where: {
       scheduleId: id,
+      removedAt: null,
       startsAt: { gte: new Date(Date.now() + 60 * 60 * 1000) },
       bookings: { none: { status: "ACTIVE" } },
     },
