@@ -37,6 +37,9 @@ export function bookingShape(b: BookingRow) {
     status: b.status,
     topic: b.topic,
     createdAt: b.createdAt,
+    cancelledAt: b.cancelledAt,
+    cancelReason: b.cancelReason,
+    cancelledBy: b.cancelledByRole,
     student: { id: b.student.id, name: b.student.name },
     slot: {
       id: b.slot.id,

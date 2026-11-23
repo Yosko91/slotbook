@@ -26,3 +26,4 @@ th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; font-siz
 dl { display: grid; grid-template-columns: 140px 1fr; gap: 6px; }
 dt { font-weight: bold; }
 dd { margin: 0; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }

@@ -70,6 +70,9 @@ export interface Booking {
   status: "ACTIVE" | "CANCELLED";
   topic: string;
   createdAt: string;
+  cancelledAt: string | null;
+  cancelReason: string | null;
+  cancelledBy: Role | null;
   student: { id: number; name: string };
   slot: {
     id: number;
@@ -87,6 +90,8 @@ export const bookSlot = (slotId: number, topic: string) =>
   api<Booking>("/api/bookings", { method: "POST", body: { slotId, topic } });
 export const getMyBookings = () => api<Booking[]>("/api/bookings/mine");
 export const getBooking = (id: number) => api<Booking>(`/api/bookings/${id}`);
+export const cancelBooking = (id: number, reason: string) =>
+  api<Booking>(`/api/bookings/${id}/cancel`, { method: "POST", body: { reason } });
 
 export const getManagedSchedules =() => api<Schedule[]>("/api/staff/schedules");
 export const getScheduleSlots = (id: number) => api<Slot[]>(`/api/staff/schedules/${id}/slots`);
