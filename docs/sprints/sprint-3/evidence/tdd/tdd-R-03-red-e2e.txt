@@ -1,0 +1,47 @@
+R-03 red (E2E, before the CSS change)
+$ npx playwright test e2e/sprint3-final.spec.ts --reporter=list
+(commit 843efefe8f2446cbcdbd33fbe499f6e9b4d9345d, 2026-11-23 12:48)
+
+
+Running 3 tests using 1 worker
+
+(node:29684) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › e2e\sprint3-final.spec.ts:27:5 › F-09 UI: tutor adds the same slot for 2 weeks (AC-51) (1.4s)
+  ok 2 [chromium] › e2e\sprint3-final.spec.ts:49:5 › TEST-88 tutor sees the summary of a period, same numbers as the API (AC-60) (947ms)
+  x  3 [chromium] › e2e\sprint3-final.spec.ts:82:7 › TEST-90 no horizontal scroll at 375 px (AC-65, NFR-09) › five main screens fit in 375 px (3.3s)
+
+
+  1) [chromium] › e2e\sprint3-final.spec.ts:82:7 › TEST-90 no horizontal scroll at 375 px (AC-65, NFR-09) › five main screens fit in 375 px 
+
+    Error: 3-my-bookings scrollWidth
+
+    expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 375
+    Received:    517
+
+      77 |     const width = await page.evaluate(() => document.documentElement.scrollWidth);
+      78 |     await page.screenshot({ path: `${SHOTS}/r03-${name}.png`, fullPage: true });
+    > 79 |     expect(width, `${name} scrollWidth`).toBeLessThanOrEqual(375);
+         |                                          ^
+      80 |   }
+      81 |
+      82 |   test("five main screens fit in 375 px", async ({ page }) => {
+        at noSideScroll (C:\Users\heloi\Documents\slotbook-repo\e2e\sprint3-final.spec.ts:79:42)
+        at C:\Users\heloi\Documents\slotbook-repo\e2e\sprint3-final.spec.ts:100:5
+
+    Error Context: test-results\sprint3-final-TEST-90-no-h-115d1--main-screens-fit-in-375-px-chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\sprint3-final-TEST-90-no-h-115d1--main-screens-fit-in-375-px-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\sprint3-final-TEST-90-no-h-115d1--main-screens-fit-in-375-px-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › e2e\sprint3-final.spec.ts:82:7 › TEST-90 no horizontal scroll at 375 px (AC-65, NFR-09) › five main screens fit in 375 px 
+  2 passed (13.3s)
+exit code: 1

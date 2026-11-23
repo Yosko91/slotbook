@@ -1,0 +1,18 @@
+R-03 red
+$ npx vitest run tests/performance.api.test.ts
+(commit 843efefe8f2446cbcdbd33fbe499f6e9b4d9345d, 2026-11-23 12:48)
+
+
+ RUN  v4.1.12 C:/Users/heloi/Documents/slotbook-repo/server
+
+stdout | tests/performance.api.test.ts > R-03 performance (NFR-08) > TEST-89 with 500 slots the median time of available-slots is below 500 ms (AC-64)
+TEST-89 available-slots with 500 slots: 15.9, 18.1, 18.4, 18.7, 18.7 ms, median 18.4 ms
+
+ ✓ tests/performance.api.test.ts (1 test) 782ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  12:48:10
+   Duration  1.67s (transform 219ms, setup 0ms, import 637ms, tests 782ms, environment 0ms)
+
+exit code: 0

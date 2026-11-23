@@ -119,6 +119,8 @@ After the first setup, every push on main deploys with .github/workflows/deploy.
 3. Try a 4th upcoming booking: "You already have 3 upcoming bookings...".
 4. In Find a session choose a Tutor and dates, then Clear filters.
 5. As somchai.tutor@slotbook.dev, Remove an open slot. Open Past sessions and click Attended on yesterday's session (created by the seed).
+6. Still as the tutor, add a slot with Repeat every week = 4 weeks: "4 slots added, every ... at ...". Add it again: nothing is added and the overlapping weeks are listed.
+7. Open Summary and choose a period: Open, Booked, Cancelled, Attended and No-show counts.
 
 ## Git workflow
 
