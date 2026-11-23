@@ -1,0 +1,44 @@
+# Local run with a database: copy .env.example to .env, then  docker compose up --build
+# Open http://localhost:3000 (UI and API in the same container).
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-slotbook}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-slotbook}
+      POSTGRES_DB: ${POSTGRES_DB:-slotbook}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-slotbook} -d ${POSTGRES_DB:-slotbook}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Same image as the app: migrate, then seed. Like the Cloud Run job slotbook-migrate.
+  migrate:
+    build: .
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-slotbook}:${POSTGRES_PASSWORD:-slotbook}@db:5432/${POSTGRES_DB:-slotbook}?schema=public
+      SEED_PASSWORD: ${SEED_PASSWORD:?Set SEED_PASSWORD in .env}
+    command: ["sh", "-c", "npx prisma migrate deploy && npm run seed"]
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-slotbook}:${POSTGRES_PASSWORD:-slotbook}@db:5432/${POSTGRES_DB:-slotbook}?schema=public
+      COOKIE_SECURE: "false"
+      CLIENT_ORIGIN: http://localhost:3000
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:
