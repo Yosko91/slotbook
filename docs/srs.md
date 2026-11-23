@@ -1,6 +1,11 @@
 # Software Requirements Specification - SlotBook
 
-Version 1.0, 5 November 2026. Authors: Yohann MOSCATO, Heloise SAVOYE.
+Version 1.1, 22 November 2026. Authors: Yohann MOSCATO, Heloise SAVOYE.
+
+| Version | Date | Change |
+|---|---|---|
+| 1.0 | 5 Nov 2026 | Baseline of Deliverable 1. |
+| 1.1 | 22 Nov 2026 | Clarifications from the Sprint 2 and Sprint 3 contracts: CH-01 to CH-04 in docs/change-log.md (tutor cancel rule, same-schedule move, soft delete of slots, BR-13/BR-14 details, attendance cannot be changed). No requirement removed, no new FR. |
 
 ## 1. Problem and context
 
@@ -60,11 +65,11 @@ Out of scope: self registration, password reset, email or LINE notifications, gr
 | BR-10 | Booking closes 1 hour before the slot starts. A past slot or a slot starting in less than 1 hour cannot be booked. | 1 |
 | BR-11 | The topic of a booking is required and has 5 to 200 characters. | 1 |
 | BR-12 | A student can see only his own bookings. A tutor can see bookings only of the schedules he manages. | 1 |
-| BR-13 | A student can have at most 3 active upcoming bookings. | 2 |
-| BR-14 | A student cannot have two active bookings at overlapping times. | 2 |
-| BR-15 | A student can cancel or move a booking only until 12 hours before the slot starts. | 2 |
-| BR-16 | A tutor can remove a slot only if it has no active booking. | 2 |
-| BR-17 | Attendance can be recorded only after the slot started, and only once per booking. | 3 |
+| BR-13 | A student can have at most 3 active upcoming bookings (ACTIVE and the slot starts after now). Cancelled and past bookings do not count. A move does not change the count. | 2 |
+| BR-14 | A student cannot have two active bookings at overlapping times, also in different schedules. Touching times are allowed (same rule as BR-08). | 2 |
+| BR-15 | A student can cancel or move a booking only until 12 hours before the slot starts. A tutor can cancel a booking of his schedule until the slot starts, with a reason of 5 to 200 characters (CH-01). A move is only to an open slot of the same schedule and keeps the topic (CH-02). | 2 |
+| BR-16 | A tutor can remove a slot only if it has no active booking and it has not started. A removed slot is kept in the database (soft delete) for the history, but it is not shown and cannot be booked (CH-03). | 2 |
+| BR-17 | Attendance (attended or no-show) can be recorded only after the slot started, only for an active booking, and only once per booking (it cannot be changed, CH-04). | 3 |
 
 ## 6. Non-functional requirements
 
@@ -74,8 +79,8 @@ Out of scope: self registration, password reset, email or LINE notifications, gr
 | NFR-02 | Authorization is done on the backend: a wrong role gets 403, a booking of another student gets 404 without data. Hiding buttons in the UI is not counted as protection. | API tests | 1 |
 | NFR-03 | No plain text password in the database (bcrypt, cost 10). | Unit/DB test | 1 |
 | NFR-04 | Integrity: with 2 booking requests sent at the same time for one slot, exactly 1 booking is stored. | API test | 1 |
-| NFR-05 | Persistence: data is in PostgreSQL and is still there after a restart of the server (and after redeploy in Lab 5). | Manual check in Sprint 1, deployed check in Sprint 2 | 1 and 2 |
-| NFR-06 | Configuration: all settings come from environment variables, no secret in Git or in the client code. The app can run in Docker on GCP. | Review + Lab 5 deployment | 2 |
+| NFR-05 | Persistence: data is in PostgreSQL and is still there after a restart of the server and after a redeploy on GCP. | MC-01 (Sprint 1), MC-02 on the deployed candidate (Sprint 2) | 1 and 2 |
+| NFR-06 | Configuration: all settings come from environment variables, no secret in Git, in the image or in the client code. The app runs in Docker on GCP (Cloud Run + Cloud SQL), deployed by GitHub Actions from main. | MC-03 review, TEST-64, TEST-66 | 2 |
 | NFR-07 | Time: all times are stored in UTC and shown in Bangkok time (UTC+7). | Unit test of opening hours | 1 |
 | NFR-08 | Performance: the available slots API answers in less than 500 ms with 500 slots in the database (local machine). | Timed API test | 3 |
 | NFR-09 | Usability: the main screens work at 375 px width without horizontal scroll. | Playwright screenshots | 3 |
@@ -100,3 +105,8 @@ A-04. One session is one-to-one. Group sessions are not needed by the center.
 | D-07 | How to block double booking under concurrency? | A partial unique index in PostgreSQL on Booking(slotId) where status is ACTIVE. Checking in the code only is not enough when two requests come together. |
 | D-08 | Session or JWT? | Server session in the database with an httpOnly cookie. Logout can really delete it, which is not easy with JWT. |
 | D-09 | Is "Customer" from the brief a good name? | We call this role Student in the UI and STUDENT in the code, because our customers are students. Staff stays STAFF (shown as Tutor). |
+| D-10 | Until when can a tutor cancel, and must he give a reason? | Until the start of the slot, reason required (5 to 200 characters), because the student must know why. After the start the tutor records attendance instead (CH-01). |
+| D-11 | Can a student move a booking to another subject? | No, only inside the same schedule; another subject is a new booking. The topic is kept (CH-02). |
+| D-12 | Delete a slot row or mark it removed? | Mark it removed (removedAt), so cancelled bookings keep their slot for the summary F-11 (CH-03). |
+| D-13 | How to enforce BR-13 and BR-14 when two requests come together? | The booking transaction locks the row of the student (SELECT ... FOR UPDATE). A unique index cannot express "3 bookings" or "overlap". |
+| D-14 | Can attendance be changed? | No, once recorded it stays (CH-04). A wrong click is reported as a defect to the coordinator. |

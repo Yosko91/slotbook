@@ -22,7 +22,12 @@ export function slotShape(slot: SlotRow) {
     tutor: { id: slot.tutor.id, name: slot.tutor.name },
     status: booking ? "BOOKED" : "OPEN",
     booking: booking
-      ? { id: booking.id, topic: booking.topic, student: { id: booking.student.id, name: booking.student.name, email: booking.student.email } }
+      ? {
+          id: booking.id,
+          topic: booking.topic,
+          attendance: booking.attendance,
+          student: { id: booking.student.id, name: booking.student.name, email: booking.student.email },
+        }
       : null,
   };
 }
@@ -40,6 +45,8 @@ export function bookingShape(b: BookingRow) {
     cancelledAt: b.cancelledAt,
     cancelReason: b.cancelReason,
     cancelledBy: b.cancelledByRole,
+    attendance: b.attendance,
+    attendanceAt: b.attendanceAt,
     student: { id: b.student.id, name: b.student.name },
     slot: {
       id: b.slot.id,

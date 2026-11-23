@@ -1,0 +1,13 @@
+R-02 green - commit 61051ab8389998a49aaf36656709c959873ea757 - 2026-11-22 09:58
+$ npx vitest run tests/ops.api.test.ts
+
+
+ RUN  v4.1.12 C:/Users/heloi/Documents/slotbook-repo/server
+
+ ✓ tests/ops.api.test.ts (1 test) 132ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  09:58:33
+   Duration  794ms (transform 146ms, setup 0ms, import 472ms, tests 132ms, environment 0ms)
+

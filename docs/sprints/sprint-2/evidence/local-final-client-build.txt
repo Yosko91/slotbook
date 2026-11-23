@@ -1,0 +1,18 @@
+$ npm run build
+(commit 278738346704f451ebb06c7e0523275fa04ff3fd, 2026-11-22 10:15)
+
+
+> slotbook-client@1.0.0 build
+> tsc -b && vite build
+
+vite v8.3.6 building client environment for production...
+transforming...
+✓ 33 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.40 kB | gzip:  0.27 kB
+dist/assets/index-B18XwtAE.css    1.75 kB | gzip:  0.71 kB
+dist/assets/index-DqTyYpv0.js   279.65 kB | gzip: 86.76 kB
+
+✓ built in 145ms
+exit code: 0

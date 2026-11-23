@@ -1,0 +1,34 @@
+$ npx prisma migrate deploy && npm run seed
+(commit 278738346704f451ebb06c7e0523275fa04ff3fd, 2026-11-22 10:15)
+
+Datasource "db": PostgreSQL database "slotbook_e2e_11221015", schema "public" at "localhost:5432"
+
+5 migrations found in prisma/migrations
+
+Applying migration `20261105134144_f01_users_sessions`
+Applying migration `20261105134722_f02_schedules_slots`
+Applying migration `20261105135108_f03_bookings`
+Applying migration `20261122100000_f04_f06_cancel_remove`
+Applying migration `20261122110000_f10_attendance`
+
+The following migration(s) have been applied:
+
+migrations/
+  ÔööÔöÇ 20261105134144_f01_users_sessions/
+    ÔööÔöÇ migration.sql
+  ÔööÔöÇ 20261105134722_f02_schedules_slots/
+    ÔööÔöÇ migration.sql
+  ÔööÔöÇ 20261105135108_f03_bookings/
+    ÔööÔöÇ migration.sql
+  ÔööÔöÇ 20261122100000_f04_f06_cancel_remove/
+    ÔööÔöÇ migration.sql
+  ÔööÔöÇ 20261122110000_f10_attendance/
+    ÔööÔöÇ migration.sql
+
+All migrations have been successfully applied.
+
+> slotbook-server@1.0.0 seed
+> tsx prisma/seed.ts
+
+Seed done: 6 users, 3 schedules, 30 new slots, 1 new past session
+exit code: 0

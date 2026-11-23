@@ -1,0 +1,13 @@
+F-05 green - commit edbcd38eeb8a6942c2f5091348fb16fb998ef388 - 2026-11-22 09:58
+$ npx vitest run tests/move.api.test.ts
+
+
+ RUN  v4.1.12 C:/Users/heloi/Documents/slotbook-repo/server
+
+ ✓ tests/move.api.test.ts (7 tests) 1756ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  09:58:13
+   Duration  2.49s (transform 195ms, setup 0ms, import 535ms, tests 1.76s, environment 0ms)
+

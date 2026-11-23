@@ -1,0 +1,34 @@
+$ npm test
+(commit 278738346704f451ebb06c7e0523275fa04ff3fd, 2026-11-22 10:14)
+
+
+> slotbook-server@1.0.0 test
+> vitest run
+
+
+ RUN  v4.1.12 C:/Users/heloi/Documents/slotbook-repo/server
+
+ ✓ tests/move.api.test.ts (7 tests) 1736ms
+ ✓ tests/limits.api.test.ts (4 tests) 1157ms
+     ✓ TEST-54 a 4th active upcoming booking gives 422, after a cancel it works (AC-38)  313ms
+ ✓ tests/attendance.api.test.ts (5 tests) 874ms
+ ✓ tests/bookings.api.test.ts (10 tests) 998ms
+ ✓ tests/cancel.api.test.ts (6 tests) 985ms
+ ✓ tests/slots.api.test.ts (8 tests) 814ms
+ ✓ tests/remove-slot.api.test.ts (5 tests) 831ms
+ ✓ tests/auth.api.test.ts (8 tests) 768ms
+ ✓ tests/filter.api.test.ts (3 tests) 697ms
+ ✓ tests/ops.api.test.ts (1 test) 121ms
+ ✓ tests/cancel-rules.unit.test.ts (2 tests) 3ms
+ ✓ tests/filter-rules.unit.test.ts (2 tests) 5ms
+ ✓ tests/booking-rules.unit.test.ts (2 tests) 3ms
+ ✓ tests/slot-rules.unit.test.ts (6 tests) 5ms
+ ✓ tests/limit-rules.unit.test.ts (2 tests) 4ms
+ ✓ tests/attendance-rules.unit.test.ts (1 test) 4ms
+
+ Test Files  16 passed (16)
+      Tests  72 passed (72)
+   Start at  10:14:46
+   Duration  16.05s (transform 421ms, setup 0ms, import 3.95s, tests 9.00s, environment 1ms)
+
+exit code: 0

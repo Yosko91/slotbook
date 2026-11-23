@@ -1,0 +1,167 @@
+F-05 red - commit c56abadce3eed07cfc54c6a1355ce5035a53c295 - 2026-11-22 09:58
+$ npx vitest run tests/move.api.test.ts
+
+
+ RUN  v4.1.12 C:/Users/heloi/Documents/slotbook-repo/server
+
+ ✗ tests/move.api.test.ts (7 tests | 7 failed) 1460ms
+     × TEST-40 student moves his booking to an open slot of the same schedule (AC-28) 163ms
+     × TEST-41 old slot in less than 12 hours gives 422 (AC-29) 80ms
+     × TEST-42 other schedule, same slot, slot too soon, unknown slot are refused (AC-30) 119ms
+     × TEST-43 target already booked gives 409 and the old booking stays (AC-31) 234ms
+     × TEST-44 target that overlaps another own booking gives 409 (AC-32) 129ms
+     × TEST-45 a student with 3 active bookings can still move one (AC-32) 122ms
+     × TEST-46 other student 404, tutor 403, anonymous 401 (AC-33) 238ms
+node.exe : 
+Au caractère Ligne:1 : 1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+------- Failed Tests 7 -------
+
+ FAIL  tests/move.api.test.ts > F-05 move a booking > TEST-40 student moves his booking to an open slot of the same 
+schedule (AC-28)
+AssertionError: expected 404 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 404
+
+ ✗ tests/move.api.test.ts:47:24
+     45|
+     46|     const res = await move(student, old.id, { slotId: s2.id });
+     47|     expect(res.status).toBe(201);
+       |                        ^
+     48|     expect(res.body).toMatchObject({ status: "ACTIVE", topic: old.topiÔÇª
+     49|     expect(res.body.id).not.toBe(old.id);
+
+------------------------[1/7]-
+
+ FAIL  tests/move.api.test.ts > F-05 move a booking > TEST-41 old slot in less than 12 hours gives 422 (AC-29)
+AssertionError: expected 404 to be 422 // Object.is equality
+
+- Expected
++ Received
+
+- 422
++ 404
+
+ ✗ tests/move.api.test.ts:67:24
+     65|
+     66|     const res = await move(student, old.id, { slotId: s2.id });
+     67|     expect(res.status).toBe(422);
+       |                        ^
+     68|     expect(res.body.code).toBe("CHANGE_CLOSED");
+     69|     expect((await row(old.id)).status).toBe("ACTIVE");
+
+------------------------[2/7]-
+
+ FAIL  tests/move.api.test.ts > F-05 move a booking > TEST-42 other schedule, same slot, slot too soon, unknown slot 
+are refused (AC-30)
+AssertionError: expected 404 to be 422 // Object.is equality
+
+- Expected
++ Received
+
+- 422
++ 404
+
+ ✗ tests/move.api.test.ts:88:26
+     86|     for (const [slotId, status, code] of cases) {
+     87|       const res = await move(student, old.id, { slotId });
+     88|       expect(res.status).toBe(status);
+       |                          ^
+     89|       expect(res.body.code).toBe(code);
+     90|     }
+
+------------------------[3/7]-
+
+ FAIL  tests/move.api.test.ts > F-05 move a booking > TEST-43 target already booked gives 409 and the old booking 
+stays (AC-31)
+AssertionError: expected 404 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 404
+
+ ✗ tests/move.api.test.ts:104:24
+    102|
+    103|     const res = await move(student, old.id, { slotId: s2.id });
+    104|     expect(res.status).toBe(409);
+       |                        ^
+    105|     expect(res.body.code).toBe("SLOT_TAKEN");
+    106|     expect(await row(old.id)).toMatchObject({ status: "ACTIVE", slotIdÔÇª
+
+------------------------[4/7]-
+
+ FAIL  tests/move.api.test.ts > F-05 move a booking > TEST-44 target that overlaps another own booking gives 409 
+(AC-32)
+AssertionError: expected 404 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 404
+
+ ✗ tests/move.api.test.ts:119:24
+    117|
+    118|     const res = await move(student, old.id, { slotId: s2.id });
+    119|     expect(res.status).toBe(409);
+       |                        ^
+    120|     expect(res.body.code).toBe("BOOKING_OVERLAP");
+    121|     expect(await row(old.id)).toMatchObject({ status: "ACTIVE", slotIdÔÇª
+
+------------------------[5/7]-
+
+ FAIL  tests/move.api.test.ts > F-05 move a booking > TEST-45 a student with 3 active bookings can still move one 
+(AC-32)
+AssertionError: expected 404 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 404
+
+ ✗ tests/move.api.test.ts:132:24
+    130|
+    131|     const res = await move(student, old.id, { slotId: target.id });
+    132|     expect(res.status).toBe(201);
+       |                        ^
+    133|     expect(await prisma.booking.count({ where: { studentId: student.idÔÇª
+    134|   });
+
+------------------------[6/7]-
+
+ FAIL  tests/move.api.test.ts > F-05 move a booking > TEST-46 other student 404, tutor 403, anonymous 401 (AC-33)
+AssertionError: expected 404 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 404
+
+ ✗ tests/move.api.test.ts:144:67
+    142|
+    143|     expect((await move(other, old.id, { slotId: s2.id })).status).toBeÔÇª
+    144|     expect((await move(tutor, old.id, { slotId: s2.id })).status).toBeÔÇª
+       |                                                                   ^
+    145|     expect((await move(null, old.id, { slotId: s2.id })).status).toBe(ÔÇª
+    146|     expect(await row(old.id)).toMatchObject({ status: "ACTIVE", slotIdÔÇª
+
+------------------------[7/7]-
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed (7)
+   Start at  09:58:09
+   Duration  2.20s (transform 204ms, setup 0ms, import 545ms, tests 1.46s, environment 0ms)
+

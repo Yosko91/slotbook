@@ -1,6 +1,6 @@
 # System-Level Software Design Specification - SlotBook
 
-Version 1.0, 5 November 2026.
+Version 1.1, 22 November 2026. Changes since 1.0: data model of Sprint 2 and 3 (migrations 4 and 5), concurrency design for limits and slot removal, new screens and endpoints, roles table, deployment done (R-02).
 
 ## 1. Stack and architecture
 
@@ -26,10 +26,14 @@ Server folders: src/routes (one router per resource), src/middleware (requireAut
 | Session | id (random token, 64 hex chars), userId, expiresAt, createdAt | FK to User, delete cascade. Index on userId. |
 | Schedule | id, name, description, isActive | name unique. Example: Calculus I. |
 | ScheduleStaff | scheduleId, staffId | Primary key (scheduleId, staffId). Says which tutor manages which schedule (BR-04). |
-| Slot | id, scheduleId, tutorId, startsAt, endsAt, createdAt | FK to Schedule and User (the tutor). Times in UTC. Check endsAt > startsAt. Index on (tutorId, startsAt) for the overlap check. |
-| Booking | id, slotId, studentId, topic, status (ACTIVE, later CANCELLED), createdAt | FK to Slot and User. Partial unique index on slotId where status = 'ACTIVE' (BR-09). Index on studentId. |
+| Slot | id, scheduleId, tutorId, startsAt, endsAt, createdAt, removedAt (Sprint 2) | FK to Schedule and User (the tutor). Times in UTC. Check endsAt > startsAt. Index on (tutorId, startsAt) for the overlap check. removedAt is set by F-06 (soft delete); every query ignores removed slots. |
+| Booking | id, slotId, studentId, topic, status (ACTIVE, CANCELLED), createdAt, cancelledAt, cancelReason, cancelledByRole (Sprint 2), attendance (ATTENDED, NO_SHOW), attendanceAt (Sprint 3) | FK to Slot and User. Partial unique index on slotId where status = 'ACTIVE' (BR-09). Index on studentId. A booking row is never deleted: cancel and move change its status. |
 
 Ownership: a Booking belongs to its student. A Slot belongs to its tutor and its schedule. The tutors of a schedule can see all slots and bookings of this schedule. A slot has no status column: it is Booked when it has an ACTIVE booking, else Open. Like this the two values can never disagree.
+
+Migrations: 1 users and sessions, 2 schedules and slots, 3 bookings (Sprint 1), 4 `f04_f06_cancel_remove` (Sprint 2), 5 `f10_attendance` (Sprint 3). All are additive (new nullable columns, new enum), so a rollback of the service to an older image still works with the newer database.
+
+Concurrency (Sprint 2). Three rules must hold when requests come at the same time. BR-09 (one active booking per slot) is kept by the partial unique index, as in Sprint 1. BR-13 and BR-14 (limits of one student) cannot be a unique index, so the booking and move transactions first lock the row of the student (`SELECT id FROM "User" WHERE id = $1 FOR UPDATE`) and then read his bookings. BR-16 (no remove of a booked slot) is kept because the booking transactions and the remove transaction lock the same slot row before they check. Single-row changes (cancel, attendance) use `UPDATE ... WHERE status = 'ACTIVE'` (or `attendance IS NULL`) and treat 0 rows as a conflict (409).
 
 Database setup: PostgreSQL 15 or more. The schema is in server/prisma/schema.prisma. Migrations are in server/prisma/migrations and are applied with npx prisma migrate deploy. The partial unique index and the check constraint are written in SQL in the migration, because Prisma schema cannot write them. Seed data (npm run seed) is reproducible: it uses upsert, so we can run it many times. It creates 3 schedules, 3 tutors, 3 students and some future slots, all with fake names. Demo passwords are only for local development and are written in the README, not in this document.
 
@@ -38,10 +42,10 @@ Database setup: PostgreSQL 15 or more. The schema is in server/prisma/schema.pri
 | Screen | Path | Who | Content |
 |---|---|---|---|
 | Login | /login | everybody | Email, password, error message. |
-| Find a session | /slots | Student | Choose a schedule, list of available slots (date, time, length, tutor), Book button, small form for the topic. |
-| My bookings | /bookings | Student | Table of own bookings, link to detail. |
-| Booking detail | /bookings/:id | Student | Schedule, tutor, date and time, topic, status. |
-| My schedules | /staff | Tutor | Choose a managed schedule, form to add a slot, table of upcoming slots with Open or Booked, student and topic. |
+| Find a session | /slots | Student | Choose a schedule, filters From, To and Tutor with Clear filters (F-08), list of available slots (date, time, length, tutor), Book button, small form for the topic. |
+| My bookings | /bookings | Student | Table of own bookings with status and attendance, link to detail. |
+| Booking detail | /bookings/:id | Student, Tutor of the schedule | Schedule, tutor, date and time, topic, status, attendance, cancellation info. Cancel booking (F-04, student until 12 h before, tutor with a reason until the start) and Move to another slot (F-05, student). |
+| My schedules | /staff | Tutor | Choose a managed schedule. View Upcoming: form to add a slot, table of upcoming slots with Open or Booked, student (link to the booking) and topic, Remove for open slots (F-06). View Past sessions: slots of the last 30 days with Attended / No-show buttons (F-10). |
 
 After login the student goes to /slots and the tutor goes to /staff. A header shows the app name, the links of the role, the user name and role, and a Log out button. If a user opens a page of the other role, the page shows "You are not allowed to see this page." (the API would refuse anyway).
 
@@ -59,10 +63,10 @@ Errors always have the same shape: { "error": "message for the user", "code": "O
 | 401 | No valid session |
 | 403 | Logged in but wrong role or schedule not managed |
 | 404 | Not found, or a booking that is not yours |
-| 409 | Conflict: slot already booked or overlapping slot |
-| 422 | Valid input but rule refuses it now (booking closed) |
+| 409 | Conflict: slot already booked, overlapping slot or booking, booking not active, slot has a booking, attendance already recorded |
+| 422 | Valid input but a rule refuses it now: booking closed, cancel/move closed (12 h), slot started, limit of 3 bookings, attendance too early, other schedule |
 
-Main endpoints (details in the feature contracts): POST /api/auth/login, POST /api/auth/logout, GET /api/auth/me, GET /api/schedules, GET /api/schedules/:id/available-slots, POST /api/bookings, GET /api/bookings/mine, GET /api/bookings/:id, GET /api/staff/schedules, GET /api/staff/schedules/:id/slots, POST /api/staff/schedules/:id/slots.
+Main endpoints (details in the feature contracts): POST /api/auth/login, POST /api/auth/logout, GET /api/auth/me, GET /api/schedules, GET /api/schedules/:id/available-slots, POST /api/bookings, GET /api/bookings/mine, GET /api/bookings/:id, GET /api/staff/schedules, GET /api/staff/schedules/:id/slots (?period=past), POST /api/staff/schedules/:id/slots. Sprint 2: POST /api/bookings/:id/cancel, POST /api/bookings/:id/move, DELETE /api/staff/slots/:id, GET /api/schedules/:id/tutors, query from/to/tutorId on available-slots, GET /api/ready, GET /api/version. Sprint 3: POST /api/staff/bookings/:id/attendance. Planned: POST /api/staff/schedules/:id/slots/weekly (F-09), GET /api/staff/schedules/:id/summary (F-11).
 
 ## 5. Roles and permissions
 
@@ -78,6 +82,11 @@ Main endpoints (details in the feature contracts): POST /api/auth/login, POST /a
 | List managed schedules | no (401) | no (403) | yes |
 | Create slot in a schedule | no (401) | no (403) | only managed schedules (else 403) |
 | See slots and bookings of a schedule | no (401) | no (403) | only managed schedules (else 403) |
+| Cancel a booking | no (401) | only his own, until 12 h before (other = 404) | only managed schedules, with reason, until the start (else 404) |
+| Move a booking | no (401) | only his own, until 12 h before (other = 404) | no (403) |
+| Remove an open slot | no (401) | no (403) | only managed schedules (else 403) |
+| Tutors of a schedule (filter) | no (401) | yes | yes |
+| Record attendance | no (401) | no (403) | only managed schedules (else 404) |
 
 The checks are done in the API with two middlewares: requireAuth (finds the session, else 401) and requireRole (else 403). The ownership checks (managed schedule, own booking) are done inside the handlers with a database query. The user id always comes from the session, never from the body or the URL.
 
@@ -99,4 +108,11 @@ When login works, the server creates a Session row with a random token of 32 byt
 
 The real values are in .env files that are in .gitignore. The repo only has .env.example files with fake values. The client gets only VITE_API_URL, no secret.
 
-Plan for Lab 5 (not done in Sprint 1): one Dockerfile with a build stage (build client and server) and a run stage with Node. On GCP, the container runs on Cloud Run and the database is Cloud SQL for PostgreSQL, so the data stays when the container restarts. DATABASE_URL is stored in Secret Manager and given to Cloud Run as an env variable. Migrations run with prisma migrate deploy before the new version starts. The image goes to Artifact Registry and GitHub Actions builds, tests and deploys from main.
+Deployment (R-02, done in Sprint 2 with the Lab 5 process of our TokTickIT labs). One Dockerfile with three stages (build client, build server and Prisma client, small runtime as user node). The API serves the built client (CLIENT_DIST_DIR), so UI and API share one URL. On GCP project toktickit-heloise, region asia-southeast1: Artifact Registry `slotbook`, Cloud SQL `slotbook-pg` (PostgreSQL 16), Secret Manager `slotbook-database-url` and `slotbook-seed-password`, Cloud Run job `slotbook-migrate` (prisma migrate deploy + seed) and service `slotbook`. First setup with deploy/deploy.sh (DRY_RUN=1 first). Every push on main runs .github/workflows/deploy.yml: CI, keyless login (Workload Identity Federation), image tagged with the commit SHA, deploy/release.sh (migration job first, the service is updated only if it succeeds), smoke test, check that /api/version returns the commit. Rollback: run the workflow by hand with image_tag = an older SHA.
+
+| Extra variable (production) | Example | Use |
+|---|---|---|
+| NODE_ENV | production | Set in the image |
+| CLIENT_DIST_DIR | /app/client/dist | The API serves the built client |
+| COMMIT_SHA | full commit SHA | Returned by /api/version |
+| SEED_PASSWORD | from Secret Manager | Password of the demo accounts (never in Git) |

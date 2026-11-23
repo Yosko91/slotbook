@@ -81,6 +81,12 @@ enum BookingStatus {
   CANCELLED
 }
 
+// F-10 (BR-17): recorded by the tutor after the start, once
+enum Attendance {
+  ATTENDED
+  NO_SHOW
+}
+
 // BR-09: only one ACTIVE booking per slot. This is a partial unique index
 // written in SQL in the migration, Prisma schema cannot write it.
 model Booking {
@@ -94,6 +100,8 @@ model Booking {
   cancelledAt     DateTime?
   cancelReason    String?
   cancelledByRole Role?
+  attendance      Attendance?
+  attendanceAt    DateTime?
   slot      Slot          @relation(fields: [slotId], references: [id], onDelete: Cascade)
   student   User          @relation(fields: [studentId], references: [id], onDelete: Cascade)
 

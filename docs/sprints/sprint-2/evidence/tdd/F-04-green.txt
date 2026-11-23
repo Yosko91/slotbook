@@ -1,0 +1,14 @@
+F-04 green - commit ce60de9444f06f01d0c69b9a715cab2d484ef2d2 - 2026-11-22 09:57
+$ npx vitest run tests/cancel-rules.unit.test.ts tests/cancel.api.test.ts
+
+
+ RUN  v4.1.12 C:/Users/heloi/Documents/slotbook-repo/server
+
+ ✓ tests/cancel.api.test.ts (6 tests) 1111ms
+ ✓ tests/cancel-rules.unit.test.ts (2 tests) 4ms
+
+ Test Files  2 passed (2)
+      Tests  8 passed (8)
+   Start at  09:57:58
+   Duration  2.03s (transform 151ms, setup 0ms, import 513ms, tests 1.11s, environment 0ms)
+

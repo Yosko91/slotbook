@@ -1,0 +1,14 @@
+F-08 green - commit 108c21134e8fbe992e168a4bc7fc1a94b59c1804 - 2026-11-22 09:58
+$ npx vitest run tests/filter-rules.unit.test.ts tests/filter.api.test.ts
+
+
+ RUN  v4.1.12 C:/Users/heloi/Documents/slotbook-repo/server
+
+ ✓ tests/filter.api.test.ts (3 tests) 705ms
+ ✓ tests/filter-rules.unit.test.ts (2 tests) 4ms
+
+ Test Files  2 passed (2)
+      Tests  5 passed (5)
+   Start at  09:58:27
+   Duration  1.64s (transform 192ms, setup 0ms, import 551ms, tests 710ms, environment 0ms)
+
