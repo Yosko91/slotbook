@@ -3,8 +3,17 @@ import type { Role } from "@prisma/client";
 import { getPrisma } from "../src/prisma.js";
 import { hashPassword } from "../src/services/password.js";
 
-// local development only, also written in the README. Never use it on a real server.
-const DEV_PASSWORD = "SlotBook!2026";
+// R-02: the password of the demo accounts comes from SEED_PASSWORD (Secret Manager on GCP).
+// Without it, the local demo password of the README is used, but never in production.
+const LOCAL_DEMO_PASSWORD = "SlotBook!2026";
+function seedPassword() {
+  const fromEnv = process.env.SEED_PASSWORD;
+  if (fromEnv) return fromEnv;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("SEED_PASSWORD is required when NODE_ENV=production");
+  }
+  return LOCAL_DEMO_PASSWORD;
+}
 
 const USERS: { name: string; email: string; role: Role }[] = [
   { name: "Somchai Wongsa", email: "somchai.tutor@slotbook.dev", role: "STAFF" },
@@ -17,7 +26,7 @@ const USERS: { name: string; email: string; role: Role }[] = [
 
 async function main() {
   const prisma = getPrisma();
-  const hash = await hashPassword(DEV_PASSWORD);
+  const hash = await hashPassword(seedPassword());
 
   // upsert, so the seed can run many times
   const ids: Record<string, number> = {};

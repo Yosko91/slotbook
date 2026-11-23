@@ -70,6 +70,9 @@ export interface Booking {
   status: "ACTIVE" | "CANCELLED";
   topic: string;
   createdAt: string;
+  cancelledAt: string | null;
+  cancelReason: string | null;
+  cancelledBy: Role | null;
   student: { id: number; name: string };
   slot: {
     id: number;
@@ -82,14 +85,33 @@ export interface Booking {
 }
 
 export const getSchedules = () => api<Schedule[]>("/api/schedules");
-export const getAvailableSlots = (id: number) => api<AvailableSlot[]>(`/api/schedules/${id}/available-slots`);
+export interface SlotFilter {
+  from?: string;
+  to?: string;
+  tutorId?: number;
+}
+
+export function getAvailableSlots(id: number, filter: SlotFilter = {}) {
+  const params = new URLSearchParams();
+  if (filter.from) params.set("from", filter.from);
+  if (filter.to) params.set("to", filter.to);
+  if (filter.tutorId) params.set("tutorId", String(filter.tutorId));
+  const query = params.toString();
+  return api<AvailableSlot[]>(`/api/schedules/${id}/available-slots${query ? `?${query}` : ""}`);
+}
+export const getScheduleTutors = (id: number) => api<{ id: number; name: string }[]>(`/api/schedules/${id}/tutors`);
 export const bookSlot = (slotId: number, topic: string) =>
   api<Booking>("/api/bookings", { method: "POST", body: { slotId, topic } });
 export const getMyBookings = () => api<Booking[]>("/api/bookings/mine");
 export const getBooking = (id: number) => api<Booking>(`/api/bookings/${id}`);
+export const moveBooking = (id: number, slotId: number) =>
+  api<Booking>(`/api/bookings/${id}/move`, { method: "POST", body: { slotId } });
+export const cancelBooking = (id: number, reason: string) =>
+  api<Booking>(`/api/bookings/${id}/cancel`, { method: "POST", body: { reason } });
 
 export const getManagedSchedules =() => api<Schedule[]>("/api/staff/schedules");
 export const getScheduleSlots = (id: number) => api<Slot[]>(`/api/staff/schedules/${id}/slots`);
+export const removeSlot = (slotId: number) => api<void>(`/api/staff/slots/${slotId}`, { method: "DELETE" });
 export const createSlot = (id: number, startsAt: string, durationMinutes: number) =>
   api<Slot>(`/api/staff/schedules/${id}/slots`, { method: "POST", body: { startsAt, durationMinutes } });
 

@@ -4,6 +4,7 @@ import { getPrisma } from "../prisma.js";
 import { requireRole } from "../middleware/auth.js";
 import { validateSlot } from "../rules/slotRules.js";
 import { slotShape, slotInclude } from "./shapes.js";
+import { RuleError, lockSlot } from "../services/bookingTx.js";
 
 export const staffRouter = Router();
 staffRouter.use(requireRole("STAFF"));
@@ -39,7 +40,7 @@ staffRouter.get("/schedules/:id/slots", async (req, res) => {
   if (!schedule) return;
 
   const slots = await getPrisma().slot.findMany({
-    where: { scheduleId: schedule.id, endsAt: { gt: new Date() } },
+    where: { scheduleId: schedule.id, removedAt: null, endsAt: { gt: new Date() } },
     include: slotInclude,
     orderBy: { startsAt: "asc" },
   });
@@ -59,7 +60,7 @@ staffRouter.post("/schedules/:id/slots", async (req, res) => {
   // BR-08: same tutor, any schedule
   const prisma = getPrisma();
   const clash = await prisma.slot.findFirst({
-    where: { tutorId: req.user!.id, startsAt: { lt: check.endsAt }, endsAt: { gt: check.startsAt } },
+    where: { tutorId: req.user!.id, removedAt: null, startsAt: { lt: check.endsAt }, endsAt: { gt: check.startsAt } },
   });
   if (clash) {
     res.status(409).json({ error: "You already have a slot at this time", code: "SLOT_OVERLAP" });
@@ -71,4 +72,45 @@ staffRouter.post("/schedules/:id/slots", async (req, res) => {
     include: slotInclude,
   });
   res.status(201).json(slotShape(slot));
+});
+
+// F-06: soft delete of an open slot that has not started (BR-16)
+staffRouter.delete("/slots/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  const prisma = getPrisma();
+  const slot = Number.isInteger(id)
+    ? await prisma.slot.findFirst({ where: { id, removedAt: null }, include: { schedule: { include: { staff: true } } } })
+    : null;
+  if (!slot) {
+    res.status(404).json({ error: "Slot not found" });
+    return;
+  }
+  if (!slot.schedule.staff.some((s) => s.staffId === req.user!.id)) {
+    res.status(403).json({ error: "You do not manage this schedule" });
+    return;
+  }
+  if (slot.startsAt.getTime() <= Date.now()) {
+    res.status(422).json({ error: "This slot has already started", code: "SLOT_STARTED" });
+    return;
+  }
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      // same lock as POST /api/bookings, so nobody books between the check and the remove
+      await lockSlot(tx, slot.id);
+      const active = await tx.booking.count({ where: { slotId: slot.id, status: "ACTIVE" } });
+      if (active > 0) {
+        throw new RuleError(409, { error: "This slot has an active booking. Cancel the booking first.", code: "SLOT_HAS_BOOKING" });
+      }
+      const removed = await tx.slot.updateMany({ where: { id: slot.id, removedAt: null }, data: { removedAt: new Date() } });
+      if (removed.count === 0) throw new RuleError(404, { error: "Slot not found" });
+    });
+  } catch (err) {
+    if (err instanceof RuleError) {
+      res.status(err.status).json(err.body);
+      return;
+    }
+    throw err;
+  }
+  res.status(204).send();
 });
