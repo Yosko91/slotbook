@@ -50,7 +50,11 @@ export function checkStudentLimits(existing: Range[], target: Range, now = new D
       error: "You already have 3 upcoming bookings. Cancel one before you book another.",
     };
   }
-  // BR-14: same rule as BR-08, touching ranges are ok
+  return checkStudentOverlap(existing, target);
+}
+
+// BR-14: same rule as BR-08, touching ranges are ok
+export function checkStudentOverlap(existing: Range[], target: Range): LimitCheck {
   if (existing.some((r) => r.startsAt < target.endsAt && target.startsAt < r.endsAt)) {
     return { ok: false, status: 409, code: "BOOKING_OVERLAP", error: "You already have a booking at this time" };
   }
