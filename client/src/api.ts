@@ -130,6 +130,17 @@ export const recordAttendance = (bookingId: number, status: Attendance) =>
 export const removeSlot = (slotId: number) => api<void>(`/api/staff/slots/${slotId}`, { method: "DELETE" });
 export const createSlot = (id: number, startsAt: string, durationMinutes: number) =>
   api<Slot>(`/api/staff/schedules/${id}/slots`, { method: "POST", body: { startsAt, durationMinutes } });
+export interface Summary {
+  from: string;
+  to: string;
+  open: number;
+  booked: number;
+  cancelled: number;
+  attended: number;
+  noShow: number;
+}
+export const getSummary = (id: number, from: string, to: string) =>
+  api<Summary>(`/api/staff/schedules/${id}/summary?from=${from}&to=${to}`);
 export const createWeeklySlots = (id: number, startsAt: string, durationMinutes: number, weeks: number) =>
   api<Slot[]>(`/api/staff/schedules/${id}/slots/weekly`, { method: "POST", body: { startsAt, durationMinutes, weeks } });
 

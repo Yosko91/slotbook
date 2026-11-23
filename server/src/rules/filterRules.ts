@@ -14,7 +14,7 @@ export type FilterCheck =
   | { ok: false; details: Record<string, string> };
 
 // "2026-12-01" -> 2026-12-01 00:00 in Bangkok, or null when it is not a real date
-function bangkokMidnight(value: string): Date | null {
+export function bangkokMidnight(value: string): Date | null {
   if (!DATE_RE.test(value)) return null;
   const d = new Date(`${value}T00:00:00+07:00`);
   if (isNaN(d.getTime())) return null;
