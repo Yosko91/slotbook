@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { FormEvent } from "react";
-import { ApiError, createSlot, getManagedSchedules, getScheduleSlots, recordAttendance, removeSlot } from "../api";
-import type { Attendance, Schedule, Slot } from "../api";
-import { START_TIMES, attendanceLabel, bangkokDate, bangkokToIso, fmtDate, fmtTime } from "../time";
+import { ApiError, createSlot, createWeeklySlots, getManagedSchedules, getScheduleSlots, recordAttendance, removeSlot } from "../api";
+import type { Attendance, Schedule, Slot, WeekError } from "../api";
+import { START_TIMES, attendanceLabel, bangkokDate, bangkokToIso, fmtDate, fmtTime, fmtWeekday } from "../time";
 
 export default function StaffSchedules() {
   const [schedules, setSchedules] = useState<Schedule[] | null>(null);
@@ -15,6 +15,8 @@ export default function StaffSchedules() {
   const [date, setDate] = useState(bangkokDate(1));
   const [time, setTime] = useState("10:00");
   const [length, setLength] = useState(30);
+  const [repeat, setRepeat] = useState(1);
+  const [weekErrors, setWeekErrors] = useState<WeekError[]>([]);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [confirmId, setConfirmId] = useState<number | null>(null);
@@ -71,14 +73,24 @@ export default function StaffSchedules() {
     setError("");
     setMessage("");
     setFieldErrors({});
+    setWeekErrors([]);
     setBusy(true);
     try {
-      const slot = await createSlot(scheduleId, bangkokToIso(date, time), length);
-      setMessage(`Slot added: ${fmtDate(slot.startsAt)} at ${fmtTime(slot.startsAt)}.`);
+      if (repeat > 1) {
+        // F-09: all the weeks or nothing
+        const series = await createWeeklySlots(scheduleId, bangkokToIso(date, time), length, repeat);
+        setMessage(`${series.length} slots added, every ${fmtWeekday(series[0].startsAt)} at ${fmtTime(series[0].startsAt)}.`);
+      } else {
+        const slot = await createSlot(scheduleId, bangkokToIso(date, time), length);
+        setMessage(`Slot added: ${fmtDate(slot.startsAt)} at ${fmtTime(slot.startsAt)}.`);
+      }
       loadSlots(scheduleId);
     } catch (err) {
       if (err instanceof ApiError && err.details) setFieldErrors(err.details);
-      else setError(err instanceof Error ? err.message : "Could not add the slot");
+      else if (err instanceof ApiError && err.weeks) {
+        setError(err.message);
+        setWeekErrors(err.weeks);
+      } else setError(err instanceof Error ? err.message : "Could not add the slot");
     } finally {
       setBusy(false);
     }
@@ -153,6 +165,18 @@ export default function StaffSchedules() {
             </select>
             {fieldErrors.durationMinutes && <span className="field-error">{fieldErrors.durationMinutes}</span>}
           </label>
+          <label>
+            Repeat every week
+            <select value={repeat} onChange={(e) => setRepeat(Number(e.target.value))}>
+              <option value={1}>No</option>
+              {[2, 3, 4, 5, 6, 7, 8].map((n) => (
+                <option key={n} value={n}>
+                  {n} weeks
+                </option>
+              ))}
+            </select>
+            {fieldErrors.weeks && <span className="field-error">{fieldErrors.weeks}</span>}
+          </label>
           <div style={{ alignSelf: "center" }}>
             <button type="submit" disabled={busy}>
               {busy ? "Adding..." : "Add slot"}
@@ -162,7 +186,20 @@ export default function StaffSchedules() {
       </div>
       )}
 
-      {error && <div className="error">{error}</div>}
+      {error && (
+        <div className="error">
+          {error}
+          {weekErrors.length > 0 && (
+            <ul className="week-errors">
+              {weekErrors.map((w) => (
+                <li key={w.week}>
+                  Week {w.week}, {fmtDate(w.startsAt)} at {fmtTime(w.startsAt)}: {w.error}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
       {message && <div className="success">{message}</div>}
 
       {view === "past" && (

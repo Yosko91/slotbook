@@ -9,21 +9,30 @@ export interface User {
   role: Role;
 }
 
+export interface WeekError {
+  week: number;
+  startsAt: string;
+  error: string;
+}
+
 interface ErrorBody {
   error?: string;
   code?: string;
   details?: Record<string, string>;
+  weeks?: WeekError[];
 }
 
 export class ApiError extends Error {
   status: number;
   code?: string;
   details?: Record<string, string>;
+  weeks?: WeekError[];
   constructor(status: number, body: ErrorBody) {
     super(body.error ?? "Something went wrong");
     this.status = status;
     this.code = body.code;
     this.details = body.details;
+    this.weeks = body.weeks;
   }
 }
 
@@ -113,7 +122,7 @@ export const moveBooking = (id: number, slotId: number) =>
 export const cancelBooking = (id: number, reason: string) =>
   api<Booking>(`/api/bookings/${id}/cancel`, { method: "POST", body: { reason } });
 
-export const getManagedSchedules =() => api<Schedule[]>("/api/staff/schedules");
+export const getManagedSchedules = () => api<Schedule[]>("/api/staff/schedules");
 export const getScheduleSlots = (id: number, period: "upcoming" | "past" = "upcoming") =>
   api<Slot[]>(`/api/staff/schedules/${id}/slots${period === "past" ? "?period=past" : ""}`);
 export const recordAttendance = (bookingId: number, status: Attendance) =>
@@ -121,6 +130,8 @@ export const recordAttendance = (bookingId: number, status: Attendance) =>
 export const removeSlot = (slotId: number) => api<void>(`/api/staff/slots/${slotId}`, { method: "DELETE" });
 export const createSlot = (id: number, startsAt: string, durationMinutes: number) =>
   api<Slot>(`/api/staff/schedules/${id}/slots`, { method: "POST", body: { startsAt, durationMinutes } });
+export const createWeeklySlots = (id: number, startsAt: string, durationMinutes: number, weeks: number) =>
+  api<Slot[]>(`/api/staff/schedules/${id}/slots/weekly`, { method: "POST", body: { startsAt, durationMinutes, weeks } });
 
 export const login = (email: string, password: string) =>
   api<User>("/api/auth/login", { method: "POST", body: { email, password } });
