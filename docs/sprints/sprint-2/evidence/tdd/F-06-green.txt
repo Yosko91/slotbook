@@ -1,0 +1,13 @@
+F-06 green - commit acc1bf53d055b6cf5a96a9b7e662e5cfadd31da0 - 2026-11-22 09:58
+$ npx vitest run tests/remove-slot.api.test.ts
+
+
+ RUN  v4.1.12 C:/Users/heloi/Documents/slotbook-repo/server
+
+ ✓ tests/remove-slot.api.test.ts (5 tests) 847ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  09:58:21
+   Duration  1.56s (transform 181ms, setup 0ms, import 519ms, tests 847ms, environment 0ms)
+

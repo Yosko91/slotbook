@@ -3,6 +3,7 @@
 | Version | Date | Author | Change |
 |---|---|---|---|
 | 1.0 | 22 Nov 2026 | Heloise | First version, before implementation. Status at the checkpoint of 29 Nov: planned (depends on F-10, which is implemented). |
+| 1.1 | 23 Nov 2026 | Yohann MOSCATO, Heloise SAVOYE | Authors corrected: team document of both members (written by Heloise with AI assistance, reviewed and approved by Yohann in the PR). |
 
 Linked requirements: FR-15. Uses the data of F-04, F-05, F-06 and F-10.
 

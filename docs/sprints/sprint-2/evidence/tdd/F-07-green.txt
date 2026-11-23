@@ -1,0 +1,14 @@
+F-07 green - commit 6ad60271915198a0a21060adcbcfa697ee146bb4 - 2026-11-22 09:58
+$ npx vitest run tests/limit-rules.unit.test.ts tests/limits.api.test.ts
+
+
+ RUN  v4.1.12 C:/Users/heloi/Documents/slotbook-repo/server
+
+ ✓ tests/limits.api.test.ts (4 tests) 1152ms
+ ✓ tests/limit-rules.unit.test.ts (2 tests) 4ms
+
+ Test Files  2 passed (2)
+      Tests  6 passed (6)
+   Start at  09:58:05
+   Duration  2.11s (transform 154ms, setup 0ms, import 554ms, tests 1.16s, environment 0ms)
+

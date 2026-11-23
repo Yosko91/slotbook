@@ -1,0 +1,126 @@
+F-06 red - commit 99c78c9d66862853497d951dba692a03551fa0fe - 2026-11-22 09:58
+$ npx vitest run tests/remove-slot.api.test.ts
+
+
+ RUN  v4.1.12 C:/Users/heloi/Documents/slotbook-repo/server
+
+ ✗ tests/remove-slot.api.test.ts (5 tests | 5 failed) 655ms
+     × TEST-47 tutor removes an open slot: it is in no list and cannot be booked (AC-34) 35ms
+     × TEST-48 a slot with an active booking cannot be removed, a cancelled booking does not block (AC-35) 55ms
+     × TEST-49 a slot that has started gives 422 (AC-36) 6ms
+     × TEST-50 other tutor 403, student 403, anonymous 401, unknown or removed 404 (AC-37) 6ms
+     × TEST-51 after a remove the tutor can create a slot at the same time (AC-37) 8ms
+node.exe : 
+Au caractère Ligne:1 : 1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+------- Failed Tests 5 -------
+
+ FAIL  tests/remove-slot.api.test.ts > F-06 remove an open slot > TEST-47 tutor removes an open slot: it is in no list 
+and cannot be booked (AC-34)
+AssertionError: expected 404 to be 204 // Object.is equality
+
+- Expected
++ Received
+
+- 204
++ 404
+
+ ✗ tests/remove-slot.api.test.ts:37:24
+     35|
+     36|     const res = await remove(tutor, slot.id);
+     37|     expect(res.status).toBe(204);
+       |                        ^
+     38|     expect(await removedAt(slot.id)).toBeInstanceOf(Date);
+     39|
+
+------------------------[1/5]-
+
+ FAIL  tests/remove-slot.api.test.ts > F-06 remove an open slot > TEST-48 a slot with an active booking cannot be 
+removed, a cancelled booking does not block (AC-35)
+AssertionError: expected 404 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 404
+
+ ✗ tests/remove-slot.api.test.ts:54:24
+     52|     await insertBooking(booked.id, student.id);
+     53|     const res = await remove(tutor, booked.id);
+     54|     expect(res.status).toBe(409);
+       |                        ^
+     55|     expect(res.body).toEqual({ error: "This slot has an active bookingÔÇª
+     56|     expect(await removedAt(booked.id)).toBeNull();
+
+------------------------[2/5]-
+
+ FAIL  tests/remove-slot.api.test.ts > F-06 remove an open slot > TEST-49 a slot that has started gives 422 (AC-36)
+AssertionError: expected 404 to be 422 // Object.is equality
+
+- Expected
++ Received
+
+- 422
++ 404
+
+ ✗ tests/remove-slot.api.test.ts:68:24
+     66|     const started = await insertSlot(schedule.id, tutor.id, hoursFromNÔÇª
+     67|     const res = await remove(tutor, started.id);
+     68|     expect(res.status).toBe(422);
+       |                        ^
+     69|     expect(res.body.code).toBe("SLOT_STARTED");
+     70|     expect(await removedAt(started.id)).toBeNull();
+
+------------------------[3/5]-
+
+ FAIL  tests/remove-slot.api.test.ts > F-06 remove an open slot > TEST-50 other tutor 403, student 403, anonymous 401, 
+unknown or removed 404 (AC-37)
+AssertionError: expected 404 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 404
+
+ ✗ tests/remove-slot.api.test.ts:76:56
+     74|     const slot = await insertSlot(schedule.id, tutor.id, inDays(3, "10ÔÇª
+     75|
+     76|     expect((await remove(otherTutor, slot.id)).status).toBe(403);
+       |                                                        ^
+     77|     expect((await remove(student, slot.id)).status).toBe(403);
+     78|     expect((await remove(null, slot.id)).status).toBe(401);
+
+------------------------[4/5]-
+
+ FAIL  tests/remove-slot.api.test.ts > F-06 remove an open slot > TEST-51 after a remove the tutor can create a slot 
+at the same time (AC-37)
+AssertionError: expected 404 to be 204 // Object.is equality
+
+- Expected
++ Received
+
+- 204
++ 404
+
+ ✗ tests/remove-slot.api.test.ts:91:51
+     89|     const start = inDays(4, "10:00");
+     90|     const slot = await insertSlot(schedule.id, tutor.id, start);
+     91|     expect((await remove(tutor, slot.id)).status).toBe(204);
+       |                                                   ^
+     92|
+     93|     const res = await request(app)
+
+------------------------[5/5]-
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed (5)
+   Start at  09:58:17
+   Duration  1.40s (transform 187ms, setup 0ms, import 538ms, tests 655ms, environment 0ms)
+

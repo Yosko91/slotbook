@@ -3,6 +3,7 @@
 | Version | Date | Author | Change |
 |---|---|---|---|
 | 1.0 | 22 Nov 2026 | Heloise | First version, before implementation. Implemented first in Sprint 3 because F-11 needs it. |
+| 1.1 | 23 Nov 2026 | Yohann MOSCATO, Heloise SAVOYE | Authors corrected: team document of both members (written by Heloise with AI assistance, reviewed and approved by Yohann in the PR). |
 
 Linked requirements: FR-14, BR-17, BR-12. Part of R-01.
 

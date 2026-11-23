@@ -1,0 +1,107 @@
+F-08 red - commit 38d3a5e3b5faee3d1df2eff2f3a21f1292bdedb9 - 2026-11-22 09:58
+$ npx vitest run tests/filter-rules.unit.test.ts tests/filter.api.test.ts
+
+
+ RUN  v4.1.12 C:/Users/heloi/Documents/slotbook-repo/server
+
+ ✗ tests/filter.api.test.ts (3 tests | 3 failed) 595ms
+     × TEST-60 from and to keep only the slots of those Bangkok days (AC-42) 49ms
+     × TEST-61 tutorId keeps only this tutor, tutors endpoint lists the tutors (AC-43, AC-44) 36ms
+     × TEST-62 bad query parameters give 400 with details (AC-44) 8ms
+ ✗ tests/filter-rules.unit.test.ts (0 test)
+node.exe : 
+Au caractère Ligne:1 : 1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+------ Failed Suites 1 -------
+
+ FAIL  tests/filter-rules.unit.test.ts [ tests/filter-rules.unit.test.ts ]
+Error: Cannot find module '../src/rules/filterRules.js' imported from 
+C:/Users/heloi/Documents/slotbook-repo/server/tests/filter-rules.unit.test.ts
+ ✗ tests/filter-rules.unit.test.ts:2:1
+      1| import { describe, expect, it } from "vitest";
+      2| import { parseAvailabilityFilter } from "../src/rules/filterRules.js";
+       | ^
+      3|
+      4| describe("F-08 availability filter", () => {
+
+------------------------[1/4]-
+
+
+------- Failed Tests 3 -------
+
+ FAIL  tests/filter.api.test.ts > F-08 filter availability > TEST-60 from and to keep only the slots of those Bangkok 
+days (AC-42)
+AssertionError: expected [ 347, 348, 349 ] to deeply equal [ 347, 348 ]
+
+- Expected
++ Received
+
+  [
+    347,
+    348,
++   349,
+  ]
+
+ ✗ tests/filter.api.test.ts:40:27
+     38|     const res = await get(`?from=${day(2)}&to=${day(2)}`);
+     39|     expect(res.status).toBe(200);
+     40|     expect(ids(res.body)).toEqual([early.id, late.id]);
+       |                           ^
+     41|
+     42|     const fromOnly = await get(`?from=${day(3)}`);
+
+------------------------[2/4]-
+
+ FAIL  tests/filter.api.test.ts > F-08 filter availability > TEST-61 tutorId keeps only this tutor, tutors endpoint 
+lists the tutors (AC-43, AC-44)
+AssertionError: expected [ 347, 348, 350, 349 ] to deeply equal [ 350 ]
+
+- Expected
++ Received
+
+  [
++   347,
++   348,
+    350,
++   349,
+  ]
+
+ ✗ tests/filter.api.test.ts:50:30
+     48|
+     49|     const onlyT2 = await get(`?tutorId=${t2.id}`);
+     50|     expect(ids(onlyT2.body)).toEqual([ofT2.id]);
+       |                              ^
+     51|
+     52|     const onlyT1 = await get(`?tutorId=${t1.id}&from=${day(4)}&to=${daÔÇª
+
+------------------------[3/4]-
+
+ FAIL  tests/filter.api.test.ts > F-08 filter availability > TEST-62 bad query parameters give 400 with details (AC-44)
+AssertionError: expected 200 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 200
+
+ ✗ tests/filter.api.test.ts:69:28
+     67|   it("TEST-62 bad query parameters give 400 with details (AC-44)", asyÔÇª
+     68|     const badDate = await get("?from=2026-13-01");
+     69|     expect(badDate.status).toBe(400);
+       |                            ^
+     70|     expect(badDate.body.details.from).toBeDefined();
+     71|
+
+------------------------[4/4]-
+
+
+ Test Files  2 failed (2)
+      Tests  3 failed (3)
+   Start at  09:58:24
+   Duration  1.54s (transform 178ms, setup 0ms, import 504ms, tests 595ms, environment 0ms)
+

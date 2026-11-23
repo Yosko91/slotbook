@@ -3,6 +3,7 @@
 | Version | Date | Author | Change |
 |---|---|---|---|
 | 1.0 | 22 Nov 2026 | Heloise | First version, before implementation. Reuses the Lab 5 delivery process of TokTickIT (Docker, CI, Cloud Run, Cloud SQL, Secret Manager, Workload Identity Federation). |
+| 1.1 | 23 Nov 2026 | Yohann MOSCATO, Heloise SAVOYE | Authors corrected: team document of both members (written by Heloise with AI assistance, reviewed and approved by Yohann in the PR). |
 
 Linked requirements: NFR-05, NFR-06, NFR-01 (secure cookie). Responsibility, not a screen.
 
