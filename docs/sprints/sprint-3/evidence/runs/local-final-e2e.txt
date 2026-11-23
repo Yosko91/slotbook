@@ -1,0 +1,31 @@
+Full E2E regression on the Sprint 3 code
+$ npx playwright test --reporter=list
+(commit fd54b33ea790e4300da7c111d2e41c26b84cfffd, 2026-11-23 12:49)
+
+
+Running 13 tests using 1 worker
+
+(node:9396) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › e2e\sprint1.spec.ts:60:5 › TEST-08 login, header and logout (AC-01, AC-04) (1.3s)
+  ok  2 [chromium] › e2e\sprint1.spec.ts:76:5 › wrong password shows the error (AC-02) (524ms)
+  ok  3 [chromium] › e2e\sprint1.spec.ts:85:5 › TEST-19, TEST-30 tutor adds a slot, student books it, tutor sees the booking (3.6s)
+  ok  4 [chromium] › e2e\sprint1.spec.ts:149:5 › TEST-31 slot taken by another student while the page is open (AC-16) (1.2s)
+  ok  5 [chromium] › e2e\sprint1.spec.ts:179:5 › student cannot open the tutor page and the API refuses (AC-12, AC-21) (861ms)
+  ok  6 [chromium] › e2e\sprint2.spec.ts:24:5 › TEST-67 student cancels a booking and the slot is open again (AC-22, AC-27) (1.9s)
+  ok  7 [chromium] › e2e\sprint2.spec.ts:60:5 › TEST-68 student moves a booking to another slot (AC-28) (1.7s)
+  ok  8 [chromium] › e2e\sprint2.spec.ts:92:5 › TEST-69 tutor removes an open slot (AC-34) (1.4s)
+  ok  9 [chromium] › e2e\sprint2.spec.ts:117:5 › TEST-70 student filters by tutor and by date, then clears (AC-45) (1.1s)
+  ok 10 [chromium] › e2e\sprint3-final.spec.ts:27:5 › F-09 UI: tutor adds the same slot for 2 weeks (AC-51) (1.4s)
+  ok 11 [chromium] › e2e\sprint3-final.spec.ts:49:5 › TEST-88 tutor sees the summary of a period, same numbers as the API (AC-60) (900ms)
+  ok 12 [chromium] › e2e\sprint3-final.spec.ts:82:7 › TEST-90 no horizontal scroll at 375 px (AC-65, NFR-09) › five main screens fit in 375 px (5.5s)
+(node:19300) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:33704) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:20588) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 13 [chromium] › e2e\sprint3.spec.ts:7:5 › TEST-83 tutor records attendance of a past session (AC-55, AC-56) (3.8s)
+
+  13 passed (33.2s)
+exit code: 0

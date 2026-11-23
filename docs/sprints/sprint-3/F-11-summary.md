@@ -4,6 +4,7 @@
 |---|---|---|---|
 | 1.0 | 22 Nov 2026 | Heloise | First version, before implementation. Status at the checkpoint of 29 Nov: planned (depends on F-10, which is implemented). |
 | 1.1 | 23 Nov 2026 | Yohann MOSCATO, Heloise SAVOYE | Authors corrected: team document of both members (written by Heloise with AI assistance, reviewed and approved by Yohann in the PR). |
+| 1.2 | 23 Nov 2026 | Yohann MOSCATO, Heloise SAVOYE | Implemented: summarize() and parseSummaryRange() in summaryRules.ts, GET /api/staff/schedules/:id/summary, Summary view with five cards. Tests TEST-84 to TEST-88 first (red b30a9b0), code a3bc978 (green). No change to the AC. |
 
 Linked requirements: FR-15. Uses the data of F-04, F-05, F-06 and F-10.
 
@@ -45,4 +46,4 @@ No change.
 | AC-62 | Missing date, bad date, from after to or more than 92 days gives 400. |
 | AC-63 | Another tutor and a student get 403, anonymous 401. |
 
-Tests (planned): TEST-84 to TEST-88 in sts.md.
+Tests: TEST-84 to TEST-88 in sts.md.

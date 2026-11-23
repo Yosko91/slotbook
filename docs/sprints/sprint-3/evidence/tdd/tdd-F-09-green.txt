@@ -1,0 +1,16 @@
+F-09 green
+$ npx vitest run tests/weekly-rules.unit.test.ts tests/weekly.api.test.ts
+(commit 4da5c620c0113994f57269d3cadc1d5865d7e5d7, 2026-11-23 12:47)
+
+
+ RUN  v4.1.12 C:/Users/heloi/Documents/slotbook-repo/server
+
+ ✓ tests/weekly.api.test.ts (5 tests) 841ms
+ ✓ tests/weekly-rules.unit.test.ts (2 tests) 5ms
+
+ Test Files  2 passed (2)
+      Tests  7 passed (7)
+   Start at  12:47:57
+   Duration  2.01s (transform 232ms, setup 0ms, import 666ms, tests 846ms, environment 0ms)
+
+exit code: 0

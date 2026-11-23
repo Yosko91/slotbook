@@ -1,0 +1,93 @@
+F-11 red
+$ npx vitest run tests/summary-rules.unit.test.ts tests/summary.api.test.ts
+(commit b30a9b0e124c2acc7ac09e5b722b14cd25893432, 2026-11-23 12:47)
+
+
+ RUN  v4.1.12 C:/Users/heloi/Documents/slotbook-repo/server
+
+ ❯ tests/summary.api.test.ts (3 tests | 3 failed) 829ms
+     × TEST-85 known data gives the expected numbers; removed slot not counted; a move is 1 cancelled + 1 booked (AC-60, AC-61) 243ms
+     × TEST-86 missing from, bad date, from after to, 93 days give 400 (AC-62) 8ms
+     × TEST-87 other tutor 403, student 403, anonymous 401 (AC-63) 6ms
+ ❯ tests/summary-rules.unit.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/summary-rules.unit.test.ts [ tests/summary-rules.unit.test.ts ]
+Error: Cannot find module '../src/rules/summaryRules.js' imported from C:/Users/heloi/Documents/slotbook-repo/server/tests/summary-rules.unit.test.ts
+ ❯ tests/summary-rules.unit.test.ts:2:1
+      1| import { describe, expect, it } from "vitest";
+      2| import { parseSummaryRange, summarize } from "../src/rules/summaryRule…
+       | ^
+      3|
+      4| const b = (status: "ACTIVE" | "CANCELLED", attendance: "ATTENDED" | "N…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/summary.api.test.ts > F-11 appointment summary API > TEST-85 known data gives the expected numbers; removed slot not counted; a move is 1 cancelled + 1 booked (AC-60, AC-61)
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/summary.api.test.ts:57:24
+     55|
+     56|     const res = await getSummary(tutor, s, `?from=${day(-3)}&to=${day(…
+     57|     expect(res.status).toBe(200);
+       |                        ^
+     58|     expect(res.body).toEqual({ from: day(-3), to: day(5), open: 3, boo…
+     59|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/summary.api.test.ts > F-11 appointment summary API > TEST-86 missing from, bad date, from after to, 93 days give 400 (AC-62)
+AssertionError: expected 404 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 404
+
+ ❯ tests/summary.api.test.ts:64:26
+     62|     for (const q of [`?to=${day(1)}`, `?from=2026-13-01&to=${day(1)}`,…
+     63|       const res = await getSummary(tutor, schedule.id, q);
+     64|       expect(res.status).toBe(400);
+       |                          ^
+     65|       expect(res.body.error).toBe("Validation failed");
+     66|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/summary.api.test.ts > F-11 appointment summary API > TEST-87 other tutor 403, student 403, anonymous 401 (AC-63)
+AssertionError: expected 404 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 404
+
+ ❯ tests/summary.api.test.ts:72:67
+     70|   it("TEST-87 other tutor 403, student 403, anonymous 401 (AC-63)", as…
+     71|     const q = `?from=${day(-3)}&to=${day(5)}`;
+     72|     expect((await getSummary(otherTutor, schedule.id, q)).status).toBe…
+       |                                                                   ^
+     73|     expect((await getSummary(student, schedule.id, q)).status).toBe(40…
+     74|     expect((await getSummary(null, schedule.id, q)).status).toBe(401);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  3 failed (3)
+   Start at  12:48:01
+   Duration  1.99s (transform 240ms, setup 0ms, import 647ms, tests 829ms, environment 0ms)
+
+exit code: 1

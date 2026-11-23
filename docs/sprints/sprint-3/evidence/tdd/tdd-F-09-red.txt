@@ -1,0 +1,145 @@
+F-09 red
+$ npx vitest run tests/weekly-rules.unit.test.ts tests/weekly.api.test.ts
+(commit a839b9c8e88ae0ad29d9f13dd28b533931612188, 2026-11-23 12:47)
+
+
+ RUN  v4.1.12 C:/Users/heloi/Documents/slotbook-repo/server
+
+ ❯ tests/weekly.api.test.ts (5 tests | 5 failed) 701ms
+     × TEST-73 four weeks create 4 open slots, same weekday and time, 7 days apart (AC-51) 57ms
+     × TEST-74 one overlapping week gives 409 with the week, and no slot is created (AC-52) 40ms
+     × TEST-74b a week after 60 days gives 400 with the weeks, and no slot is created (AC-52) 8ms
+     × TEST-75 weeks 1, 9 and "4" give 400, no slot is created (AC-53) 10ms
+     × TEST-76 other tutor 403, student 403, anonymous 401 (AC-54) 6ms
+ ❯ tests/weekly-rules.unit.test.ts (2 tests | 2 failed) 6ms
+     × TEST-72 four weeks give 4 dates 7 days apart at the same Bangkok time; weeks after 60 days are refused (AC-51, AC-52) 4ms
+     × TEST-72b weeks must be an integer from 2 to 8, and the first slot is checked like a normal slot (AC-53) 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/weekly-rules.unit.test.ts > F-09 weekly slot rules > TEST-72 four weeks give 4 dates 7 days apart at the same Bangkok time; weeks after 60 days are refused (AC-51, AC-52)
+TypeError: weeklyStarts is not a function
+ ❯ tests/weekly-rules.unit.test.ts:10:20
+      8| describe("F-09 weekly slot rules", () => {
+      9|   it("TEST-72 four weeks give 4 dates 7 days apart at the same Bangkok…
+     10|     const starts = weeklyStarts(new Date("2026-11-17T10:00:00+07:00"),…
+       |                    ^
+     11|     expect(starts.map((d) => d.toISOString())).toEqual([
+     12|       "2026-11-17T03:00:00.000Z",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  tests/weekly-rules.unit.test.ts > F-09 weekly slot rules > TEST-72b weeks must be an integer from 2 to 8, and the first slot is checked like a normal slot (AC-53)
+TypeError: undefined is not a function
+ ❯ tests/weekly-rules.unit.test.ts:31:46
+     29|
+     30|   it("TEST-72b weeks must be an integer from 2 to 8, and the first slo…
+     31|     expect([1, 9, "4", 2.5, null, undefined].map(parseWeeks)).toEqual(…
+       |                                              ^
+     32|     expect([2, 8].map(parseWeeks)).toEqual([2, 8]);
+     33|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  tests/weekly.api.test.ts > F-09 weekly slots API > TEST-73 four weeks create 4 open slots, same weekday and time, 7 days apart (AC-51)
+AssertionError: expected 404 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 404
+
+ ❯ tests/weekly.api.test.ts:37:24
+     35|     const start = inDays(2, "10:00");
+     36|     const res = await postWeekly(tutor, schedule.id, { startsAt: start…
+     37|     expect(res.status).toBe(201);
+       |                        ^
+     38|     expect(res.body).toHaveLength(4);
+     39|     const starts = res.body.map((s: { startsAt: string }) => new Date(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  tests/weekly.api.test.ts > F-09 weekly slots API > TEST-74 one overlapping week gives 409 with the week, and no slot is created (AC-52)
+AssertionError: expected 404 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 404
+
+ ❯ tests/weekly.api.test.ts:52:24
+     50|
+     51|     const res = await postWeekly(tutor, schedule.id, { startsAt: start…
+     52|     expect(res.status).toBe(409);
+       |                        ^
+     53|     expect(res.body.code).toBe("SLOT_OVERLAP");
+     54|     expect(res.body.error).toBe("Some weeks overlap your slots");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  tests/weekly.api.test.ts > F-09 weekly slots API > TEST-74b a week after 60 days gives 400 with the weeks, and no slot is created (AC-52)
+AssertionError: expected 404 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 404
+
+ ❯ tests/weekly.api.test.ts:62:24
+     60|     const before = await slotsOf(tutor.id);
+     61|     const res = await postWeekly(tutor, schedule.id, { startsAt: inDay…
+     62|     expect(res.status).toBe(400);
+       |                        ^
+     63|     expect(res.body.error).toBe("Some weeks are not valid");
+     64|     expect(res.body.weeks.map((w: { week: number }) => w.week)).toEqua…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  tests/weekly.api.test.ts > F-09 weekly slots API > TEST-75 weeks 1, 9 and "4" give 400, no slot is created (AC-53)
+AssertionError: expected 404 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 404
+
+ ❯ tests/weekly.api.test.ts:72:26
+     70|     for (const weeks of [1, 9, "4"]) {
+     71|       const res = await postWeekly(tutor, schedule.id, { startsAt: inD…
+     72|       expect(res.status).toBe(400);
+       |                          ^
+     73|       expect(res.body.details.weeks).toBe("Weeks must be a whole numbe…
+     74|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  tests/weekly.api.test.ts > F-09 weekly slots API > TEST-76 other tutor 403, student 403, anonymous 401 (AC-54)
+AssertionError: expected 404 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 404
+
+ ❯ tests/weekly.api.test.ts:80:70
+     78|   it("TEST-76 other tutor 403, student 403, anonymous 401 (AC-54)", as…
+     79|     const body = { startsAt: inDays(5, "11:00").toISOString(), duratio…
+     80|     expect((await postWeekly(otherTutor, schedule.id, body)).status).t…
+       |                                                                      ^
+     81|     expect((await postWeekly(student, schedule.id, body)).status).toBe…
+     82|     expect((await postWeekly(null, schedule.id, body)).status).toBe(40…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  7 failed (7)
+   Start at  12:47:53
+   Duration  1.74s (transform 196ms, setup 0ms, import 586ms, tests 707ms, environment 0ms)
+
+exit code: 1
