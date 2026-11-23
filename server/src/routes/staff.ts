@@ -2,10 +2,11 @@ import { Router } from "express";
 import type { Request, Response } from "express";
 import { getPrisma } from "../prisma.js";
 import { requireRole } from "../middleware/auth.js";
-import { validateSlot } from "../rules/slotRules.js";
+import { planWeeklySlots, validateSlot } from "../rules/slotRules.js";
 import { bookingInclude, bookingShape, slotInclude, slotShape } from "./shapes.js";
-import { RuleError, lockSlot } from "../services/bookingTx.js";
+import { RuleError, lockSlot, lockUser } from "../services/bookingTx.js";
 import { canRecordAttendance, parseAttendance } from "../rules/attendanceRules.js";
+import { parseSummaryRange, summarize } from "../rules/summaryRules.js";
 
 export const staffRouter = Router();
 staffRouter.use(requireRole("STAFF"));
@@ -83,6 +84,71 @@ staffRouter.post("/schedules/:id/slots", async (req, res) => {
     include: slotInclude,
   });
   res.status(201).json(slotShape(slot));
+});
+
+// F-09: the same slot every week for 2 to 8 weeks, all or nothing (AC-51 to AC-54)
+staffRouter.post("/schedules/:id/slots/weekly", async (req, res) => {
+  const schedule = await managedSchedule(req, res);
+  if (!schedule) return;
+
+  const plan = planWeeklySlots({ startsAt: req.body?.startsAt, durationMinutes: req.body?.durationMinutes, weeks: req.body?.weeks });
+  if (!plan.ok) {
+    if ("details" in plan) res.status(400).json({ error: "Validation failed", details: plan.details });
+    else res.status(400).json({ error: "Some weeks are not valid", weeks: plan.weeks });
+    return;
+  }
+
+  const prisma = getPrisma();
+  const tutorId = req.user!.id;
+  const planned = plan.slots;
+  try {
+    const ids = await prisma.$transaction(async (tx) => {
+      // two series of the same tutor at the same time wait for each other here (BR-08)
+      await lockUser(tx, tutorId);
+      const clashes: { week: number; startsAt: string; error: string }[] = [];
+      for (const [k, s] of planned.entries()) {
+        const clash = await tx.slot.findFirst({
+          where: { tutorId, removedAt: null, startsAt: { lt: s.endsAt }, endsAt: { gt: s.startsAt } },
+        });
+        if (clash) clashes.push({ week: k + 1, startsAt: s.startsAt.toISOString(), error: "You already have a slot at this time" });
+      }
+      if (clashes.length > 0) {
+        throw new RuleError(409, { error: "Some weeks overlap your slots", code: "SLOT_OVERLAP", weeks: clashes });
+      }
+      const created: { id: number }[] = [];
+      for (const s of planned) {
+        created.push(await tx.slot.create({ data: { scheduleId: schedule.id, tutorId, startsAt: s.startsAt, endsAt: s.endsAt } }));
+      }
+      return created.map((c) => c.id);
+    });
+    const slots = await prisma.slot.findMany({ where: { id: { in: ids } }, include: slotInclude, orderBy: { startsAt: "asc" } });
+    res.status(201).json(slots.map(slotShape));
+  } catch (err) {
+    if (err instanceof RuleError) {
+      res.status(err.status).json(err.body);
+      return;
+    }
+    throw err;
+  }
+});
+
+// F-11: counts of the schedule for a period of Bangkok days (AC-60 to AC-63)
+staffRouter.get("/schedules/:id/summary", async (req, res) => {
+  const schedule = await managedSchedule(req, res);
+  if (!schedule) return;
+
+  const parsed = parseSummaryRange(req.query as Record<string, unknown>);
+  if (!parsed.ok) {
+    res.status(400).json({ error: "Validation failed", details: parsed.details });
+    return;
+  }
+  const { from, to, startsFrom, startsBefore } = parsed.range;
+  // removed slots are not counted (AC-61)
+  const slots = await getPrisma().slot.findMany({
+    where: { scheduleId: schedule.id, removedAt: null, startsAt: { gte: startsFrom, lt: startsBefore } },
+    select: { bookings: { select: { status: true, attendance: true } } },
+  });
+  res.json({ from, to, ...summarize(slots) });
 });
 
 // F-06: soft delete of an open slot that has not started (BR-16)

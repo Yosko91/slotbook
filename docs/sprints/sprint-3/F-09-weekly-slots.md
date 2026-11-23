@@ -4,6 +4,7 @@
 |---|---|---|---|
 | 1.0 | 22 Nov 2026 | Heloise | First version, before implementation. Status at the checkpoint of 29 Nov: planned. |
 | 1.1 | 23 Nov 2026 | Yohann MOSCATO, Heloise SAVOYE | Authors corrected: team document of both members (written by Heloise with AI assistance, reviewed and approved by Yohann in the PR). |
+| 1.2 | 23 Nov 2026 | Yohann MOSCATO, Heloise SAVOYE | Implemented: POST /api/staff/schedules/:id/slots/weekly (all or nothing in one transaction, tutor row lock), Repeat every week select. Tests TEST-72 to TEST-76 written first (red a839b9c), code 4da5c62 (green). No change to the AC. |
 
 Linked requirements: FR-13, BR-04 to BR-08.
 
@@ -40,4 +41,4 @@ No change (N normal Slot rows).
 | AC-53 | weeks smaller than 2, bigger than 8 or not an integer gives 400. |
 | AC-54 | Same permissions as F-02 (403 for another tutor or a student, 401 anonymous). |
 
-Tests (planned): TEST-72 to TEST-76 in sts.md.
+Tests: TEST-72 to TEST-76 in sts.md.

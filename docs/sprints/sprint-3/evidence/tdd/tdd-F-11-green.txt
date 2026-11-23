@@ -1,0 +1,16 @@
+F-11 green
+$ npx vitest run tests/summary-rules.unit.test.ts tests/summary.api.test.ts
+(commit a3bc9786a6058f59d5dde68477a6d3fcfa20bb71, 2026-11-23 12:48)
+
+
+ RUN  v4.1.12 C:/Users/heloi/Documents/slotbook-repo/server
+
+ ✓ tests/summary.api.test.ts (3 tests) 937ms
+ ✓ tests/summary-rules.unit.test.ts (2 tests) 4ms
+
+ Test Files  2 passed (2)
+      Tests  5 passed (5)
+   Start at  12:48:06
+   Duration  2.13s (transform 240ms, setup 0ms, import 703ms, tests 941ms, environment 0ms)
+
+exit code: 0

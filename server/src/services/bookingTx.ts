@@ -4,7 +4,7 @@ import type { Prisma } from "@prisma/client";
 export class RuleError extends Error {
   constructor(
     public status: number,
-    public body: { error: string; code?: string }
+    public body: { error: string; code?: string; weeks?: unknown[] }
   ) {
     super(body.error);
   }
@@ -15,7 +15,12 @@ type Tx = Prisma.TransactionClient;
 // F-07: requests of the same student wait for each other here, so the limit and the
 // overlap check (BR-13, BR-14) cannot be passed by two parallel requests
 export async function lockStudent(tx: Tx, studentId: number) {
-  await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${studentId} FOR UPDATE`;
+  await lockUser(tx, studentId);
+}
+
+// row lock on a user (student for F-07, tutor for the F-09 series)
+export async function lockUser(tx: Tx, userId: number) {
+  await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${userId} FOR UPDATE`;
 }
 
 // F-06: booking and removing a slot wait for each other on the slot row

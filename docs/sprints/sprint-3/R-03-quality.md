@@ -4,6 +4,7 @@
 |---|---|---|---|
 | 1.0 | 22 Nov 2026 | Heloise | First version. Status at the checkpoint of 29 Nov: planned. |
 | 1.1 | 23 Nov 2026 | Yohann MOSCATO, Heloise SAVOYE | Authors corrected: team document of both members (written by Heloise with AI assistance, reviewed and approved by Yohann in the PR). |
+| 1.2 | 23 Nov 2026 | Yohann MOSCATO, Heloise SAVOYE | Implemented: TEST-89 (timed API, 500 slots: median 16.6 ms locally, so no code change was needed for NFR-08) and TEST-90 (375 px, failed on My bookings before the change, red 843efef); CSS change fd54b33 (green). No change to the AC. |
 
 Linked requirements: NFR-08, NFR-09. Responsibility, not a screen.
 
