@@ -2,12 +2,14 @@ import { Router } from "express";
 import { Prisma } from "@prisma/client";
 import { getPrisma } from "../prisma.js";
 import { requireRole } from "../middleware/auth.js";
-import { canChangeBooking, isBookingOpen, validateReason, validateTopic } from "../rules/bookingRules.js";
+import { canChangeBooking, checkStudentLimits, isBookingOpen, validateReason, validateTopic } from "../rules/bookingRules.js";
+import { RuleError, activeRanges, lockSlot, lockStudent } from "../services/bookingTx.js";
 import { bookingInclude, bookingShape } from "./shapes.js";
 
 export const bookingsRouter = Router();
 
 const SLOT_TAKEN = { error: "This slot is already booked", code: "SLOT_TAKEN" };
+const SLOT_NOT_FOUND = { error: "Slot not found" };
 
 bookingsRouter.post("/", requireRole("STUDENT"), async (req, res) => {
   const { slotId, topic } = req.body ?? {};
@@ -21,12 +23,13 @@ bookingsRouter.post("/", requireRole("STUDENT"), async (req, res) => {
   }
 
   const prisma = getPrisma();
-  const slot = await prisma.slot.findUnique({
-    where: { id: slotId },
+  const studentId = req.user!.id;
+  const slot = await prisma.slot.findFirst({
+    where: { id: slotId, removedAt: null },
     include: { bookings: { where: { status: "ACTIVE" } } },
   });
   if (!slot) {
-    res.status(404).json({ error: "Slot not found" });
+    res.status(404).json(SLOT_NOT_FOUND);
     return;
   }
   if (!isBookingOpen(slot.startsAt)) {
@@ -39,12 +42,29 @@ bookingsRouter.post("/", requireRole("STUDENT"), async (req, res) => {
   }
 
   try {
-    const booking = await prisma.booking.create({
-      data: { slotId: slot.id, studentId: req.user!.id, topic: topicCheck.ok ? topicCheck.topic : "" },
-      include: bookingInclude,
+    const booking = await prisma.$transaction(async (tx) => {
+      // F-07: BR-13 and BR-14, checked while the student row is locked
+      await lockStudent(tx, studentId);
+      const limits = checkStudentLimits(await activeRanges(tx, studentId), slot);
+      if (!limits.ok) throw new RuleError(limits.status, { error: limits.error, code: limits.code });
+
+      // F-06: the slot may have been removed or booked since the first read
+      await lockSlot(tx, slot.id);
+      const current = await tx.slot.findUnique({ where: { id: slot.id }, include: { bookings: { where: { status: "ACTIVE" } } } });
+      if (!current || current.removedAt) throw new RuleError(404, SLOT_NOT_FOUND);
+      if (current.bookings.length > 0) throw new RuleError(409, SLOT_TAKEN);
+
+      return tx.booking.create({
+        data: { slotId: slot.id, studentId, topic: topicCheck.ok ? topicCheck.topic : "" },
+        include: bookingInclude,
+      });
     });
     res.status(201).json(bookingShape(booking));
   } catch (err) {
+    if (err instanceof RuleError) {
+      res.status(err.status).json(err.body);
+      return;
+    }
     // two requests passed the check at the same time: the unique index stops the second one (BR-09)
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
       res.status(409).json(SLOT_TAKEN);
