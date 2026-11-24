@@ -47,7 +47,7 @@ describe("F-03 booking API", () => {
     expect(res.body.some((s: { id: number }) => s.id === schedule.id)).toBe(true);
   });
 
-  it("TEST-22 available slots: only open slots that start in 1 hour or more", async () => {
+  it("TEST-22 available slots: only open slots that can still be booked (BR-10)", async () => {
     openSlot = await makeSlot(inDays(2, "10:00"));
     const booked = await makeSlot(inDays(2, "11:00"));
     await prisma.booking.create({ data: { slotId: booked.id, studentId: studentB.id, topic: "Already booked" } });
@@ -94,7 +94,7 @@ describe("F-03 booking API", () => {
     expect(await activeCount(slot.id)).toBe(1);
   });
 
-  it("TEST-26 slot starting in less than 1 hour or in the past gives 422", async () => {
+  it("TEST-26 slot starting in 30 min or in the past gives 422", async () => {
     const soon = await makeSlot(new Date(Date.now() + 30 * 60000));
     const past = await makeSlot(new Date(Date.now() - 2 * 3600000));
 

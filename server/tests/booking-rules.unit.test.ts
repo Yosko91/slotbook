@@ -5,9 +5,10 @@ const NOW = new Date("2026-11-10T10:00:00+07:00");
 const minutesLater = (m: number) => new Date(NOW.getTime() + m * 60000);
 
 describe("F-03 booking rules", () => {
-  it("TEST-20 booking closes 1 hour before the start", () => {
+  // STS v1.1 (CH-09): the cutoff is now 3 hours, so 60 min is closed. v1.0 expected true. Exact boundary: TEST-92.
+  it("TEST-20 booking closes before the start (BR-10 v1.2)", () => {
     expect(isBookingOpen(minutesLater(59), NOW)).toBe(false);
-    expect(isBookingOpen(minutesLater(60), NOW)).toBe(true);
+    expect(isBookingOpen(minutesLater(60), NOW)).toBe(false);
     expect(isBookingOpen(minutesLater(24 * 60), NOW)).toBe(true);
     expect(isBookingOpen(minutesLater(-30), NOW)).toBe(false);
   });
