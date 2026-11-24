@@ -43,7 +43,7 @@ Files: server tests are in server/tests, E2E in e2e/.
 | BR-07 | F-02 (F-09 later) | 1, 3 | AC-09, AC-52 | TEST-10, 14, 72 | slot-rules.unit.test.ts, slots.api.test.ts | Passed v1.0.0-sprint1; F-09 part (TEST-72, 74) passed locally fd54b33 |
 | BR-08 | F-02, F-06 (F-09 later) | 1, 2, 3 | AC-11, AC-37, AC-52 | TEST-12, 15, 51, 74 | slot-rules.unit.test.ts, slots.api.test.ts, remove-slot.api.test.ts | Passed v1.0.0-sprint1, TEST-51 Passed v2.1.0-d2 (CI 45163296295, local 2787383); F-09 part (TEST-72, 74) passed locally fd54b33 |
 | BR-09 | F-03, F-04, F-05 | 1, 2 | AC-16, AC-17, AC-27, AC-31 | TEST-24, 25, 31, 39, 43 | bookings.api.test.ts, cancel.api.test.ts, move.api.test.ts | Passed v1.0.0-sprint1 and Passed v2.1.0-d2 (CI 45163296295, local 2787383) |
-| BR-10 | F-03, F-05 | 1, 2 | AC-18, AC-30 | TEST-20, 26, 42 | booking-rules.unit.test.ts, bookings.api.test.ts, move.api.test.ts | Passed v1.0.0-sprint1 and Passed v2.1.0-d2 (CI 45163296295, local 2787383) |
+| BR-10 (v1.2, CH-09: 3 hours) | F-03, F-05, F-08 | 1, 2, changed in Lab 7 | AC-14, AC-18, AC-30, AC-66 | TEST-20, 22, 26, 42, 92 to 97 | booking-rules.unit.test.ts, bookings.api.test.ts, move.api.test.ts, booking-cutoff.test.ts, e2e/ch09-cutoff.spec.ts | 1 hour rule: Passed v1.0.0-sprint1 and v2.1.0-d2. CH-09: to fill (red on the tests commit, green on the fix commit) |
 | BR-11 | F-03 | 1 | AC-19 | TEST-21, 27 | booking-rules.unit.test.ts, bookings.api.test.ts | Passed v1.0.0-sprint1 |
 | BR-12 | F-02, F-03, F-04, F-05, F-10, R-01 | 1, 2, 3 | AC-13, AC-20, AC-26, AC-33, AC-59 | TEST-18, 28, 38, 46, 82 | bookings.api.test.ts, cancel.api.test.ts, move.api.test.ts, attendance.api.test.ts | Passed v1.0.0-sprint1 and Passed v2.1.0-d2 (CI 45163296295, local 2787383) |
 | BR-13 | F-07 | 2 | AC-38, AC-39, AC-41, AC-32 | TEST-52, 54, 55, 57, 45 | limit-rules.unit.test.ts, limits.api.test.ts, move.api.test.ts | Passed v2.1.0-d2 (CI 45163296295, local 2787383) |
@@ -75,4 +75,4 @@ Files: server tests are in server/tests, E2E in e2e/.
 
 ## Approved changes
 
-See the register in A.3 (CH-01 to CH-08; CH-09 of Lab 7 is pending). None removes a requirement or moves a Sprint 2 feature to Sprint 3.
+See the register in A.3 (CH-01 to CH-10; CH-09 is the Lab 7 change request, see docs/maintenance/lab-7). None removes a requirement or moves a Sprint 2 feature to Sprint 3.

@@ -1,11 +1,12 @@
 # Software Requirements Specification - SlotBook
 
-Version 1.1, 22 November 2026. Authors: Yohann MOSCATO, Heloise SAVOYE.
+Version 1.2, 23 November 2026. Authors: Yohann MOSCATO, Heloise SAVOYE.
 
 | Version | Date | Change |
 |---|---|---|
 | 1.0 | 5 Nov 2026 | Baseline of Deliverable 1. |
 | 1.1 | 22 Nov 2026 | Clarifications from the Sprint 2 and Sprint 3 contracts: CH-01 to CH-04 in docs/change-log.md (tutor cancel rule, same-schedule move, soft delete of slots, BR-13/BR-14 details, attendance cannot be changed). No requirement removed, no new FR. |
+| 1.2 | 23 Nov 2026 | CH-09 (Lab 7 maintenance, approved change request): BR-10 booking cutoff changed from 1 hour to 3 hours before the start; D-05 updated. Old text kept in v1.1 (Git history). |
 
 ## 1. Problem and context
 
@@ -62,7 +63,7 @@ Out of scope: self registration, password reset, email or LINE notifications, gr
 | BR-07 | A slot must start in the future and not more than 60 days from now. | 1 |
 | BR-08 | A tutor cannot have two slots that overlap, even in different schedules. Slots that only touch (10:00-10:30 and 10:30-11:00) are allowed. | 1 |
 | BR-09 | A slot can have only one active booking. This must stay true when two students click at the same time. | 1 |
-| BR-10 | Booking closes 1 hour before the slot starts. A past slot or a slot starting in less than 1 hour cannot be booked. | 1 |
+| BR-10 | Booking closes 3 hours before the slot starts: a slot can be booked (or chosen as the new slot of a move) only if its start is 3 hours or more after now. A past slot or a slot starting in less than 3 hours cannot be booked. Changed from 1 hour by CH-09 (v1.2). | 1, changed in Lab 7 |
 | BR-11 | The topic of a booking is required and has 5 to 200 characters. | 1 |
 | BR-12 | A student can see only his own bookings. A tutor can see bookings only of the schedules he manages. | 1 |
 | BR-13 | A student can have at most 3 active upcoming bookings (ACTIVE and the slot starts after now). Cancelled and past bookings do not count. A move does not change the count. | 2 |
@@ -100,7 +101,7 @@ A-04. One session is one-to-one. Group sessions are not needed by the center.
 | D-02 | Slot length? | 30 or 60 minutes only, start on :00 or :30. Free length makes overlaps hard to read for students. |
 | D-03 | Who can change availability? | Only tutors assigned to the schedule (BR-04). The assignment is seed data, no admin screen. |
 | D-04 | Cancellation limit? | 12 hours before start, for Sprint 2 (BR-15). Not needed for Sprint 1. |
-| D-05 | Until when can a student book? | Until 1 hour before the start (BR-10), so the tutor can prepare a bit. |
+| D-05 | Until when can a student book? | v1.0: until 1 hour before the start. v1.2 (CH-09): until 3 hours before the start (BR-10), because with 1 hour the tutor often sees the topic only when the student arrives and cannot prepare the exercise. |
 | D-06 | What does a student get when he asks for another student's booking? | 404 Not found, same as a booking that does not exist. A 403 would tell that the booking exists. |
 | D-07 | How to block double booking under concurrency? | A partial unique index in PostgreSQL on Booking(slotId) where status is ACTIVE. Checking in the code only is not enough when two requests come together. |
 | D-08 | Session or JWT? | Server session in the database with an httpOnly cookie. Logout can really delete it, which is not easy with JWT. |

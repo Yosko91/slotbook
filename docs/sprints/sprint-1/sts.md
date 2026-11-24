@@ -1,6 +1,6 @@
 # Sprint 1 Software Test Specification
 
-Version 1.0, 5 November 2026. Levels: Unit (Vitest, no database), API (Vitest + Supertest on the real PostgreSQL database), E2E (Playwright, real browser, real API and database). Each API test creates its own users, schedule and slots, so tests do not depend on the seed and can run many times.
+Version 1.1, 23 November 2026 (CH-09, Lab 7: rows TEST-20, TEST-22, TEST-26 revised, TEST-92 to TEST-95 added; v1.0 of 5 November 2026 is in Git history). Levels: Unit (Vitest, no database), API (Vitest + Supertest on the real PostgreSQL database), E2E (Playwright, real browser, real API and database). Each API test creates its own users, schedule and slots, so tests do not depend on the seed and can run many times.
 
 | Test | AC | Level | Precondition / input | Action | Expected result |
 |---|---|---|---|---|---|
@@ -23,16 +23,31 @@ Version 1.0, 5 November 2026. Levels: Unit (Vitest, no database), API (Vitest + 
 | TEST-17 | AC-12 | API | Student, then no cookie | POST /api/staff/schedules/S/slots | 403 for student, 401 for anonymous |
 | TEST-18 | AC-13 | API | Slot booked by a student | GET /api/staff/schedules/S/slots | Slot has status BOOKED with student name and topic, other slot OPEN |
 | TEST-19 | AC-07, AC-13 | E2E | Seeded tutor | Add a slot in the UI | Slot appears in the table with status Open |
-| TEST-20 | AC-18 | Unit | Start in 59 min, 60 min, past | isBookingOpen | false, true, false |
+| TEST-20 | AC-18 | Unit | (v1.1) Start in 60 min, 24 h, past. v1.0 had 59 min false / 60 min true; the 60 min result changes from true to false because of CH-09, the exact boundary moves to TEST-92 | isBookingOpen | false, true, false |
 | TEST-21 | AC-19 | Unit | Topic of 4, 5, 200, 201 characters and spaces only | validateTopic | 4, 201 and spaces refused, 5 and 200 accepted |
-| TEST-22 | AC-14 | API | Schedule with open slot, booked slot, slot in 30 min | GET /api/schedules/S/available-slots | Only the open slot that starts in 1 hour or more |
+| TEST-22 | AC-14 | API | Schedule with open slot, booked slot, slot in 30 min | GET /api/schedules/S/available-slots | Only the open slot that starts in 3 hours or more (v1.1; input unchanged, the 30 min slot was already hidden) |
 | TEST-23 | AC-15 | API | Open slot, student | POST /api/bookings then GET /api/bookings/mine | 201, ACTIVE row in Booking, booking in /mine, slot not in available list |
 | TEST-24 | AC-16 | API | Slot already booked by student A | Student B POST /api/bookings | 409 SLOT_TAKEN, only 1 active booking for the slot |
 | TEST-25 | AC-17 | API | Open slot, students A and B | Two POST /api/bookings at the same time (Promise.all) | One 201 and one 409, 1 booking stored |
-| TEST-26 | AC-18 | API | Slot that starts in 30 min, slot in the past (inserted directly) | POST /api/bookings | 422 BOOKING_CLOSED, nothing stored |
+| TEST-26 | AC-18 | API | Slot that starts in 30 min, slot in the past (inserted directly). Unchanged by CH-09: kept as regression | POST /api/bookings | 422 BOOKING_CLOSED, nothing stored |
 | TEST-27 | AC-19 | API | Open slot | POST with topic "abc", with slotId 999999 | 400 with details.topic, 404 "Slot not found" |
 | TEST-28 | AC-20 | API | Booking of student A, tutor of S, tutor of other schedule | GET /api/bookings/:id as B, as tutor of S, as other tutor | 404 without booking fields, 200, 404 |
 | TEST-29 | AC-21 | API | Tutor, then no cookie | POST /api/bookings | 403 then 401, nothing stored |
 | TEST-30 | AC-14, AC-15, AC-20 | E2E | Tutor adds a slot | Student logs in, books it, opens My bookings, tutor logs in | Booking detail and My bookings show it, tutor table shows Booked with the student name |
 | TEST-31 | AC-16 | E2E | Student opened Find a session, then another student booked the slot through the API | Student clicks Book and Confirm | Red box "This slot is already booked" |
 | MC-01 | NFR-05 | Manual | A booking exists | Stop and start the API server, reload My bookings | The booking is still there |
+
+## CH-09 (Lab 7) - booking cutoff 3 hours
+
+Written and reviewed before the code change. NOW is fixed in unit tests; API tests insert slots directly at a time relative to the real clock, rounded to the minute, with a margin of 2 minutes so the test does not depend on the run speed.
+
+| Test | AC | Level | Precondition / input | Action | Expected result |
+|---|---|---|---|---|---|
+| TEST-92 | AC-66 | Unit | NOW fixed; start in 179 min, 180 min, 181 min, 60 min, 120 min | isBookingOpen | false, true, true, false, false |
+| TEST-93 | AC-18, AC-66 | API | Fresh student; slots inserted at now + 2 h 58 min, now + 2 h, now + 3 h 05 min | POST /api/bookings on each | 422 BOOKING_CLOSED (message says 3 hours) and no booking for the first two; 201 ACTIVE for the third |
+| TEST-94 | AC-14 | API | Slots at now + 2 h, now + 3 h 05 min, in 2 days | GET /api/schedules/S/available-slots | Only the 3 h 05 min slot and the 2 days slot, sorted |
+| TEST-96 | AC-14, AC-66 | E2E | Seeded tutor and student; tutor creates (API) one slot between now + 1 h 10 and now + 2 h 55 and one slot at now + 3 h 05 or later, inside opening hours. Run between 09:00 and 18:30 Bangkok, otherwise skipped (BR-06) | Tutor opens his schedule; student opens Find a session; student POSTs the closed slot; student books the open slot | Both Open for the tutor; student sees only the later slot; 422 BOOKING_CLOSED (3 hours message); booking of the later slot confirmed. Screenshots CH09-01 to CH09-04 |
+| TEST-97 | AC-20, AC-21 | E2E | Kevin books a slot 5 days ahead (API) | Ploy opens /bookings/:id of Kevin; tutor POSTs /api/bookings | Error shown and API 404; tutor 403 (preserved Sprint 1 behaviour). Screenshot CH09-05 |
+| TEST-95 | AC-30 | API | Student with an ACTIVE booking in 2 days; open slot of the same schedule at now + 2 h; open slot at now + 3 h 05 min | POST /api/bookings/:id/move to each | 422 BOOKING_CLOSED and old booking still ACTIVE; then 201 to the 3 h 05 min slot |
+
+Preserved behaviour (regression, must stay green without change of expected results): TEST-21 to TEST-31 (topic, one booking per slot, concurrency NFR-04, ownership BR-12 / 404, roles 401/403), TEST-40 to TEST-46 (move), TEST-52 to TEST-62 (limits and filters), all auth tests, e2e/sprint1.spec.ts (TEST-71) and the Sprint 2 and 3 suites (TEST-91: all server tests and all E2E).

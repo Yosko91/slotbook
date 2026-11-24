@@ -11,7 +11,7 @@ Linked requirements: FR-12, NFR-07.
 
 Behavior. In "Find a session", under the subject select, the student has three filters: "From" (date), "To" (date) and "Tutor" (All tutors, or one tutor of the schedule). The list is loaded again when a filter changes. "Clear filters" resets them. When nothing matches: "No available slot for these filters."
 
-Workflow. The client sends the filters as query parameters. The API validates them (400 with details), converts the Bangkok days to UTC (from = day 00:00 Bangkok, to = next day 00:00 Bangkok, so "to" is inclusive), and adds them to the Sprint 1 query (open, not removed, starts in 1 hour or more).
+Workflow. The client sends the filters as query parameters. The API validates them (400 with details), converts the Bangkok days to UTC (from = day 00:00 Bangkok, to = next day 00:00 Bangkok, so "to" is inclusive), and adds them to the Sprint 1 query (open, not removed, starts in 3 hours or more since CH-09).
 
 Business rules and validation.
 - from and to: format YYYY-MM-DD and a real date, both optional. If both are given, from <= to.
@@ -44,7 +44,7 @@ No change. The index (scheduleId, startsAt) of Sprint 1 is used by the date filt
 
 | ID | Criterion |
 |---|---|
-| AC-42 | from and to keep only the slots whose start is in the Bangkok days from..to (inclusive), still only open slots that start in 1 hour or more. |
+| AC-42 | from and to keep only the slots whose start is in the Bangkok days from..to (inclusive), still only open slots that start in 3 hours or more (CH-09). |
 | AC-43 | tutorId keeps only the slots of this tutor. GET /api/schedules/:id/tutors gives the tutors of the schedule. |
 | AC-44 | A bad date, from after to, or a bad tutorId gives 400 with details. A tutor not in the schedule gives an empty list. |
 | AC-45 | In the UI the student filters by tutor and by date, sees only matching slots, and "Clear filters" shows all slots again. |
