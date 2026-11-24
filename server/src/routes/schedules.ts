@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { getPrisma } from "../prisma.js";
 import { parseAvailabilityFilter } from "../rules/filterRules.js";
+import { bookingOpenFrom } from "../rules/bookingRules.js";
 
 export const schedulesRouter = Router();
 
@@ -50,7 +51,7 @@ schedulesRouter.get("/:id/available-slots", async (req, res) => {
     return;
   }
   const { startsFrom, startsBefore, tutorId } = parsed.filter;
-  const openFrom = new Date(Date.now() + 60 * 60 * 1000);
+  const openFrom = bookingOpenFrom(); // BR-10, same rule as POST /api/bookings
 
   const slots = await prisma.slot.findMany({
     where: {

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { Prisma } from "@prisma/client";
 import { getPrisma } from "../prisma.js";
 import { requireRole } from "../middleware/auth.js";
-import { canChangeBooking, checkStudentLimits, checkStudentOverlap, isBookingOpen, validateReason, validateTopic } from "../rules/bookingRules.js";
+import { BOOKING_CLOSED, canChangeBooking, checkStudentLimits, checkStudentOverlap, isBookingOpen, validateReason, validateTopic } from "../rules/bookingRules.js";
 import { RuleError, activeRanges, lockSlot, lockStudent } from "../services/bookingTx.js";
 import { bookingInclude, bookingShape } from "./shapes.js";
 
@@ -33,7 +33,7 @@ bookingsRouter.post("/", requireRole("STUDENT"), async (req, res) => {
     return;
   }
   if (!isBookingOpen(slot.startsAt)) {
-    res.status(422).json({ error: "Booking is closed for this slot (less than 1 hour before the start)", code: "BOOKING_CLOSED" });
+    res.status(422).json(BOOKING_CLOSED);
     return;
   }
   if (slot.bookings.length > 0) {
@@ -190,7 +190,7 @@ bookingsRouter.post("/:id/move", requireRole("STUDENT"), async (req, res) => {
     return;
   }
   if (!isBookingOpen(target.startsAt)) {
-    res.status(422).json({ error: "Booking is closed for this slot (less than 1 hour before the start)", code: "BOOKING_CLOSED" });
+    res.status(422).json(BOOKING_CLOSED);
     return;
   }
 

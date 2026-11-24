@@ -4,6 +4,7 @@
 |---|---|---|---|
 | 1.0 | 22 Nov 2026 | Heloise | First version, before implementation. |
 | 1.1 | 23 Nov 2026 | Yohann MOSCATO, Heloise SAVOYE | Authors corrected: team document of both members (written by Heloise with AI assistance, reviewed and approved by Yohann in the PR). |
+| 1.2 | 23 Nov 2026 | Heloise, reviewed by Yohann | CH-09: the new slot must start in 3 hours or more (BR-10 v1.2). AC-30 revised. |
 
 Linked requirements: FR-10, BR-09, BR-10, BR-14, BR-15. Uses the cancel logic of F-04.
 
@@ -11,11 +12,11 @@ Linked requirements: FR-10, BR-09, BR-10, BR-14, BR-15. Uses the cancel logic of
 
 Behavior. On the detail of his ACTIVE booking, a student clicks "Move to another slot". The page lists the available slots of the same schedule (same list as "Find a session", without the slot of the booking). He clicks "Move here" on one slot. In one step the old booking is cancelled and a new ACTIVE booking with the same topic is created on the new slot. The client opens the detail of the new booking with the message "Your booking is moved."
 
-Workflow. The API checks session and role STUDENT, validates slotId (400), loads the booking (404 if not his), checks ACTIVE (409) and the 12 hours rule on the OLD slot (422). It loads the new slot (404 if unknown or removed), checks it is not the same slot (422), is in the same schedule (422) and starts in 1 hour or more (422). Then in ONE database transaction: lock the row of the student (`SELECT ... FOR UPDATE`, same lock as F-07), lock the new slot row, check again that the new slot has no ACTIVE booking (409), check that the new time does not overlap another ACTIVE booking of the student (409), cancel the old booking (`WHERE status = 'ACTIVE'`, 0 rows means it was cancelled meanwhile: 409), insert the new booking. If any step fails, nothing is changed: the old booking stays ACTIVE. If the partial unique index refuses the insert (another student was faster), the transaction is rolled back and the answer is 409 SLOT_TAKEN.
+Workflow. The API checks session and role STUDENT, validates slotId (400), loads the booking (404 if not his), checks ACTIVE (409) and the 12 hours rule on the OLD slot (422). It loads the new slot (404 if unknown or removed), checks it is not the same slot (422), is in the same schedule (422) and starts in 3 hours or more (422, v1.2). Then in ONE database transaction: lock the row of the student (`SELECT ... FOR UPDATE`, same lock as F-07), lock the new slot row, check again that the new slot has no ACTIVE booking (409), check that the new time does not overlap another ACTIVE booking of the student (409), cancel the old booking (`WHERE status = 'ACTIVE'`, 0 rows means it was cancelled meanwhile: 409), insert the new booking. If any step fails, nothing is changed: the old booking stays ACTIVE. If the partial unique index refuses the insert (another student was faster), the transaction is rolled back and the answer is 409 SLOT_TAKEN.
 
 Business rules and validation.
 - BR-15: move allowed only while the OLD slot starts in 12 hours or more.
-- BR-10: the NEW slot must start in 1 hour or more.
+- BR-10 (v1.2): the NEW slot must start in 3 hours or more.
 - BR-09: the new slot must have no ACTIVE booking, in the code and with the index.
 - BR-14: the new time must not overlap another ACTIVE upcoming booking of the student. The old booking is not counted (a move to a slot that overlaps only the old one is allowed).
 - BR-13 (3 active bookings): a move does not change the number of active bookings, so it is allowed even with 3 active bookings.
@@ -48,7 +49,7 @@ No new column. Uses the columns of migration 4 for the old booking.
 |---|---|
 | AC-28 | A student moves his ACTIVE booking (old slot in 12 hours or more) to an open slot of the same schedule: 201, a new ACTIVE booking with the same topic is stored, the old one is CANCELLED with reason "Moved to another slot", the old slot is available again and the new slot is not. |
 | AC-29 | If the old slot starts in less than 12 hours the answer is 422 CHANGE_CLOSED and nothing changes. |
-| AC-30 | A new slot in another schedule (422 DIFFERENT_SCHEDULE), the same slot (422 SAME_SLOT), a slot in less than 1 hour (422 BOOKING_CLOSED) or an unknown slot (404) is refused and nothing changes. |
+| AC-30 | A new slot in another schedule (422 DIFFERENT_SCHEDULE), the same slot (422 SAME_SLOT), a slot in less than 3 hours (422 BOOKING_CLOSED, v1.2) or an unknown slot (404) is refused and nothing changes. |
 | AC-31 | If the new slot is already booked the answer is 409 SLOT_TAKEN and the old booking is still ACTIVE (the move is all or nothing). |
 | AC-32 | A new slot that overlaps another ACTIVE booking of the student gives 409 BOOKING_OVERLAP. A student who has 3 active bookings can still move one. |
 | AC-33 | Another student gets 404, a tutor gets 403, anonymous gets 401, and nothing changes. |
