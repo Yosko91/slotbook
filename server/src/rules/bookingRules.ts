@@ -1,7 +1,17 @@
-const CLOSE_BEFORE_MS = 60 * 60 * 1000; // BR-10: booking closes 1 hour before start
+// BR-10 v1.2 (CH-09): booking closes 3 hours before start (was 1 hour). Single source for book, move and available slots.
+export const BOOKING_CLOSE_BEFORE_MS = 3 * 60 * 60 * 1000;
+export const BOOKING_CLOSED = {
+  error: "Booking is closed for this slot (less than 3 hours before the start)",
+  code: "BOOKING_CLOSED",
+};
 
 export function isBookingOpen(startsAt: Date, now = new Date()) {
-  return startsAt.getTime() - now.getTime() >= CLOSE_BEFORE_MS;
+  return startsAt.getTime() - now.getTime() >= BOOKING_CLOSE_BEFORE_MS;
+}
+
+// first start time that can still be booked, for the available slots query
+export function bookingOpenFrom(now = new Date()) {
+  return new Date(now.getTime() + BOOKING_CLOSE_BEFORE_MS);
 }
 
 // BR-11
