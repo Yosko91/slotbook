@@ -1,0 +1,120 @@
+$ (cd server) DATABASE_URL=<new empty database slotbook_d2check> npx prisma migrate deploy && npm run seed && npx vitest run --reporter=verbose
+(commit a68f7ce5016da485e2913b8088cf838282495577, 2026-11-25 05:40 +0100)
+
+5 migrations found in prisma/migrations
+Applying migration `20261105134144_f01_users_sessions`
+Applying migration `20261105134722_f02_schedules_slots`
+Applying migration `20261105135108_f03_bookings`
+Applying migration `20261122100000_f04_f06_cancel_remove`
+Applying migration `20261122110000_f10_attendance`
+The following migration(s) have been applied:
+migrations/
+    └─ migration.sql
+    └─ migration.sql
+    └─ migration.sql
+    └─ migration.sql
+    └─ migration.sql
+All migrations have been successfully applied.
+Seed done: 6 users, 3 schedules, 30 new slots, 1 new past session
+
+ RUN  v4.1.12 C:/Users/yohan/slotbook/server
+
+ ✓ tests/auth.api.test.ts > F-01 login, logout, current user > TEST-01 valid login returns the user and an httpOnly cookie 170ms
+ ✓ tests/auth.api.test.ts > F-01 login, logout, current user > TEST-02 wrong password gives 401 and no cookie 94ms
+ ✓ tests/auth.api.test.ts > F-01 login, logout, current user > TEST-03 unknown email gives exactly the same answer 92ms
+ ✓ tests/auth.api.test.ts > F-01 login, logout, current user > missing fields give 400 11ms
+ ✓ tests/auth.api.test.ts > F-01 login, logout, current user > TEST-04 /me returns the current user with a session and 401 without 26ms
+ ✓ tests/auth.api.test.ts > F-01 login, logout, current user > TEST-05 logout deletes the session and the cookie stops working 131ms
+ ✓ tests/auth.api.test.ts > F-01 login, logout, current user > TEST-06 protected endpoints without session give 401 and no data 18ms
+ ✓ tests/auth.api.test.ts > F-01 login, logout, current user > TEST-07 password is stored as a bcrypt hash 87ms
+ ✓ tests/move.api.test.ts > F-05 move a booking > TEST-40 student moves his booking to an open slot of the same schedule (AC-28) 281ms
+ ✓ tests/move.api.test.ts > F-05 move a booking > TEST-41 old slot in less than 12 hours gives 422 (AC-29) 111ms
+ ✓ tests/move.api.test.ts > F-05 move a booking > TEST-42 other schedule, same slot, slot too soon, unknown slot are refused (AC-30) 166ms
+ ✓ tests/move.api.test.ts > F-05 move a booking > TEST-43 target already booked gives 409 and the old booking stays (AC-31) 228ms
+ ✓ tests/move.api.test.ts > F-05 move a booking > TEST-44 target that overlaps another own booking gives 409 (AC-32) 108ms
+ ✓ tests/move.api.test.ts > F-05 move a booking > TEST-45 a student with 3 active bookings can still move one (AC-32) 114ms
+ ✓ tests/move.api.test.ts > F-05 move a booking > TEST-46 other student 404, tutor 403, anonymous 401 (AC-33) 223ms
+ ✓ tests/limits.api.test.ts > F-07 booking limits > TEST-54 a 4th active upcoming booking gives 422, after a cancel it works (AC-38) 284ms
+ ✓ tests/limits.api.test.ts > F-07 booking limits > TEST-55 cancelled and past bookings do not count (AC-39) 120ms
+ ✓ tests/limits.api.test.ts > F-07 booking limits > TEST-56 overlap with an own booking in another schedule gives 409, touching is ok (AC-40) 127ms
+ ✓ tests/limits.api.test.ts > F-07 booking limits > TEST-57 two bookings at the same time cannot pass the limit together (AC-41) 120ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > GET /api/schedules lists the schedules for a student 56ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-22 available slots: only open slots that can still be booked (BR-10) 41ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-23 student books an open slot and sees it in his bookings 149ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-24 booking a booked slot gives 409 and still one booking 22ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-25 two students at the same time: one 201, one 409 34ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-26 slot starting in 30 min or in the past gives 422 33ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-27 bad topic gives 400, unknown slot gives 404 46ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-28 a booking is visible only to its student and the tutors of the schedule 68ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-29 tutor cannot book (403) and anonymous gets 401 37ms
+ ✓ tests/bookings.api.test.ts > F-03 booking API > TEST-18 tutor list shows Booked with the student and topic 16ms
+ ✓ tests/weekly.api.test.ts > F-09 weekly slots API > TEST-73 four weeks create 4 open slots, same weekday and time, 7 days apart (AC-51) 142ms
+ ✓ tests/weekly.api.test.ts > F-09 weekly slots API > TEST-74 one overlapping week gives 409 with the week, and no slot is created (AC-52) 50ms
+ ✓ tests/weekly.api.test.ts > F-09 weekly slots API > TEST-74b a week after 60 days gives 400 with the weeks, and no slot is created (AC-52) 24ms
+ ✓ tests/weekly.api.test.ts > F-09 weekly slots API > TEST-75 weeks 1, 9 and "4" give 400, no slot is created (AC-53) 42ms
+ ✓ tests/weekly.api.test.ts > F-09 weekly slots API > TEST-76 other tutor 403, student 403, anonymous 401 (AC-54) 38ms
+ ✓ tests/attendance.api.test.ts > F-10 attendance > TEST-78 past sessions list: started in the last 30 days, newest first (AC-55) 125ms
+ ✓ tests/attendance.api.test.ts > F-10 attendance > TEST-79 tutor records ATTENDED and the student sees it (AC-56) 66ms
+ ✓ tests/attendance.api.test.ts > F-10 attendance > TEST-80 before the start 422, bad value 400, nothing stored (AC-57) 41ms
+ ✓ tests/attendance.api.test.ts > F-10 attendance > TEST-81 only once, also at the same time, not for a cancelled booking (AC-58) 134ms
+ ✓ tests/attendance.api.test.ts > F-10 attendance > TEST-82 other tutor 404, student 403, anonymous 401 (AC-59) 48ms
+ ✓ tests/cancel.api.test.ts > F-04 cancel a booking > TEST-34 student cancels his booking 12 hours or more before the start (AC-22) 181ms
+ ✓ tests/cancel.api.test.ts > F-04 cancel a booking > TEST-35 student cancel less than 12 hours before the start gives 422 (AC-23) 19ms
+ ✓ tests/cancel.api.test.ts > F-04 cancel a booking > TEST-36 tutor cancels with a required reason, not after the start (AC-24) 116ms
+ ✓ tests/cancel.api.test.ts > F-04 cancel a booking > TEST-37 a booking that is already cancelled gives 409 (AC-25) 20ms
+ ✓ tests/cancel.api.test.ts > F-04 cancel a booking > TEST-38 other student and tutor of another schedule get 404, anonymous 401 (AC-26) 49ms
+ ✓ tests/cancel.api.test.ts > F-04 cancel a booking > TEST-39 after a cancel another student can book the same slot (AC-27) 48ms
+ ✓ tests/booking-cutoff.test.ts > CH-09 booking cutoff 3 hours (BR-10 v1.2) > TEST-92 isBookingOpen: exactly 3 hours is open, 2:59 is closed (AC-66) 2ms
+ ✓ tests/booking-cutoff.test.ts > CH-09 booking cutoff 3 hours (BR-10 v1.2) > TEST-93 POST /api/bookings: slot in less than 3 hours gives 422, 3 h 05 gives 201 (AC-18, AC-66) 215ms
+ ✓ tests/booking-cutoff.test.ts > CH-09 booking cutoff 3 hours (BR-10 v1.2) > TEST-94 available slots hide slots that start in less than 3 hours (AC-14) 106ms
+ ✓ tests/booking-cutoff.test.ts > CH-09 booking cutoff 3 hours (BR-10 v1.2) > TEST-95 move: new slot in less than 3 hours gives 422 and nothing changes (AC-30) 248ms
+ ✓ tests/remove-slot.api.test.ts > F-06 remove an open slot > TEST-47 tutor removes an open slot: it is in no list and cannot be booked (AC-34) 193ms
+ ✓ tests/remove-slot.api.test.ts > F-06 remove an open slot > TEST-48 a slot with an active booking cannot be removed, a cancelled booking does not block (AC-35) 46ms
+ ✓ tests/remove-slot.api.test.ts > F-06 remove an open slot > TEST-49 a slot that has started gives 422 (AC-36) 17ms
+ ✓ tests/remove-slot.api.test.ts > F-06 remove an open slot > TEST-50 other tutor 403, student 403, anonymous 401, unknown or removed 404 (AC-37) 70ms
+ ✓ tests/remove-slot.api.test.ts > F-06 remove an open slot > TEST-51 after a remove the tutor can create a slot at the same time (AC-37) 38ms
+ ✓ tests/summary.api.test.ts > F-11 appointment summary API > TEST-85 known data gives the expected numbers; removed slot not counted; a move is 1 cancelled + 1 booked (AC-60, AC-61) 192ms
+ ✓ tests/summary.api.test.ts > F-11 appointment summary API > TEST-86 missing from, bad date, from after to, 93 days give 400 (AC-62) 72ms
+ ✓ tests/summary.api.test.ts > F-11 appointment summary API > TEST-87 other tutor 403, student 403, anonymous 401 (AC-63) 30ms
+ ✓ tests/slots.api.test.ts > F-02 tutor slots API > GET /api/staff/schedules lists only the managed schedules 38ms
+ ✓ tests/slots.api.test.ts > F-02 tutor slots API > TEST-13 tutor creates a valid slot in his schedule 66ms
+ ✓ tests/slots.api.test.ts > F-02 tutor slots API > TEST-14 invalid slots give 400 and nothing is stored 50ms
+ ✓ tests/slots.api.test.ts > F-02 tutor slots API > TEST-15 overlapping slot gives 409, touching slot is ok 61ms
+ ✓ tests/slots.api.test.ts > F-02 tutor slots API > TEST-16 tutor cannot use a schedule he does not manage 27ms
+ ✓ tests/slots.api.test.ts > F-02 tutor slots API > unknown schedule gives 404 14ms
+ ✓ tests/slots.api.test.ts > F-02 tutor slots API > TEST-17 student gets 403 and anonymous gets 401 30ms
+ ✓ tests/slots.api.test.ts > F-02 tutor slots API > slots list shows the upcoming slots of the schedule, sorted 63ms
+stdout | tests/performance.api.test.ts > R-03 performance (NFR-08) > TEST-89 with 500 slots the median time of available-slots is below 500 ms (AC-64)
+TEST-89 available-slots with 500 slots: 21.8, 22.2, 23.8, 28.5, 30.1 ms, median 23.8 ms
+
+ ✓ tests/performance.api.test.ts > R-03 performance (NFR-08) > TEST-89 with 500 slots the median time of available-slots is below 500 ms (AC-64) 187ms
+ ✓ tests/filter.api.test.ts > F-08 filter availability > TEST-60 from and to keep only the slots of those Bangkok days (AC-42) 82ms
+ ✓ tests/filter.api.test.ts > F-08 filter availability > TEST-61 tutorId keeps only this tutor, tutors endpoint lists the tutors (AC-43, AC-44) 69ms
+ ✓ tests/filter.api.test.ts > F-08 filter availability > TEST-62 bad query parameters give 400 with details (AC-44) 89ms
+ ✓ tests/ops.api.test.ts > R-02 operation endpoints > TEST-63 /api/ready checks the database and /api/version gives the commit (AC-46, AC-48) 159ms
+ ✓ tests/weekly-rules.unit.test.ts > F-09 weekly slot rules > TEST-72 four weeks give 4 dates 7 days apart at the same Bangkok time; weeks after 60 days are refused (AC-51, AC-52) 4ms
+ ✓ tests/weekly-rules.unit.test.ts > F-09 weekly slot rules > TEST-72b weeks must be an integer from 2 to 8, and the first slot is checked like a normal slot (AC-53) 0ms
+ ✓ tests/filter-rules.unit.test.ts > F-08 availability filter > TEST-58 Bangkok days become UTC bounds, to is inclusive (NFR-07) 3ms
+ ✓ tests/filter-rules.unit.test.ts > F-08 availability filter > TEST-59 bad dates, from after to and bad tutorId give errors 1ms
+ ✓ tests/slot-rules.unit.test.ts > F-02 slot rules > TEST-09 length must be 30 or 60 and start on :00 or :30 2ms
+ ✓ tests/slot-rules.unit.test.ts > F-02 slot rules > TEST-09b missing or bad start time 0ms
+ ✓ tests/slot-rules.unit.test.ts > F-02 slot rules > TEST-10 start must be in the future and at most 60 days ahead 0ms
+ ✓ tests/slot-rules.unit.test.ts > F-02 slot rules > TEST-11 slot must be inside 08:00 - 20:00 Bangkok time 0ms
+ ✓ tests/slot-rules.unit.test.ts > F-02 slot rules > valid slot gives the end time 1ms
+ ✓ tests/slot-rules.unit.test.ts > F-02 slot rules > TEST-12 overlap is true only when the times really cross 0ms
+ ✓ tests/summary-rules.unit.test.ts > F-11 summary rules > TEST-84 five numbers: open, booked, cancelled, attended, no-show (AC-60, AC-61) 3ms
+ ✓ tests/summary-rules.unit.test.ts > F-11 summary rules > TEST-84b the range needs from and to, from <= to, at most 92 days (AC-62) 3ms
+ ✓ tests/attendance-rules.unit.test.ts > F-10 attendance rules > TEST-77 attendance only after the start, only ATTENDED or NO_SHOW (BR-17) 2ms
+ ✓ tests/booking-rules.unit.test.ts > F-03 booking rules > TEST-20 booking closes before the start (BR-10 v1.2) 2ms
+ ✓ tests/booking-rules.unit.test.ts > F-03 booking rules > TEST-21 topic must have 5 to 200 characters 1ms
+ ✓ tests/limit-rules.unit.test.ts > F-07 booking limits > TEST-52 at most 3 active upcoming bookings, past ones do not count (BR-13) 3ms
+ ✓ tests/limit-rules.unit.test.ts > F-07 booking limits > TEST-53 no overlap with another active booking, touching is ok (BR-14) 0ms
+ ✓ tests/cancel-rules.unit.test.ts > F-04 cancel rules > TEST-32 a student can change a booking until 12 hours before the start (BR-15) 3ms
+ ✓ tests/cancel-rules.unit.test.ts > F-04 cancel rules > TEST-33 tutor reason is required (5 to 200), student reason is optional (max 200) 2ms
+
+ Test Files  22 passed (22)
+      Tests  89 passed (89)
+   Start at  05:40:36
+   Duration  23.54s (transform 606ms, setup 0ms, import 5.36s, tests 12.46s, environment 2ms)
+
+exit code 0

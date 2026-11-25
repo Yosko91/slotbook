@@ -1,0 +1,8 @@
+$ (cd server) npm run typecheck
+(commit a68f7ce5016da485e2913b8088cf838282495577, 2026-11-25 05:26 +0100)
+
+
+> slotbook-server@1.0.0 typecheck
+> tsc --noEmit
+
+exit code 0
