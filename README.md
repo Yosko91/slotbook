@@ -81,6 +81,8 @@ npm run e2e
 
 The E2E tests use the seeded accounts, so run npm run seed before.
 
+For evidence runs, use a new empty database (like the CI): create it, put it in DATABASE_URL, then run npx prisma migrate deploy and npm run seed. A database used for many earlier runs keeps old test rows, and some tests can then fail or time out (FD-05 in docs/change-log.md).
+
 ## Demo sequence
 
 1. Log in as somchai.tutor@slotbook.dev, choose Calculus I, add a slot (date, time, 30 min). It is shown as Open.

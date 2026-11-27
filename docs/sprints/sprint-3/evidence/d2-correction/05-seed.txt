@@ -1,0 +1,9 @@
+$ (cd server) npm run seed
+(commit a68f7ce5016da485e2913b8088cf838282495577, 2026-11-25 05:28 +0100)
+
+
+> slotbook-server@1.0.0 seed
+> tsx prisma/seed.ts
+
+Seed done: 6 users, 3 schedules, 0 new slots, 0 new past session
+exit code 0

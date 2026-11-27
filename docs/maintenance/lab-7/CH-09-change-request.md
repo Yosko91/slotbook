@@ -1,7 +1,7 @@
 # CH-09 Change request - booking cutoff 3 hours (Lab 7)
 
-Version 1.0, 23 November 2026. Authors: Heloise SAVOYE, Yohann MOSCATO (team document, written by Heloise with AI assistance, reviewed by Yohann).
-GitHub Issue: #TO_FILL. Type: adaptive/perfective maintenance (changed requirement, not a defect).
+Version 1.1, 25 November 2026 (Issue, commits, review and release filled in after the merge of PR #31; version 1.0 of 23 Nov is in Git). Authors: Heloise SAVOYE, Yohann MOSCATO (team document, written by Heloise with AI assistance, reviewed by Yohann).
+GitHub Issue: #30. Type: adaptive/perfective maintenance (changed requirement, not a defect).
 
 ## 1. Request
 
@@ -17,7 +17,7 @@ GitHub Issue: #TO_FILL. Type: adaptive/perfective maintenance (changed requireme
 | Scope | One constant and its 3 uses (book, move target, available slots). No new screen, no new endpoint, no migration. |
 | Out of scope | Cancel/move 12 h rule of the student (BR-15), tutor cancel, attendance, slot creation rules BR-05 to BR-08. |
 | Acceptance criteria | AC-14 v1.1, AC-18 v1.1, AC-30 v1.1, new AC-66 (see F-03 v1.1, F-05 v1.1). |
-| Approval | Approved by: TO_FILL (instructor/TA), date: TO_FILL, where: TO_FILL (Issue comment / LEB2 / message). |
+| Approval | Team: Yohann MOSCATO agrees in Issue #30 (24 Nov 2026 06:45 UTC) and approves the revised contract in PR #31 (24 Nov 06:46 UTC). No separate instructor/TA approval was asked: we understood it was not required. |
 
 ## 2. Versions
 
@@ -25,10 +25,10 @@ GitHub Issue: #TO_FILL. Type: adaptive/perfective maintenance (changed requireme
 |---|---|
 | Accepted Sprint 1 baseline (old behaviour) | `v1.0.0-sprint1`, `0f2b680` (7 Nov 2026) |
 | Actual pre-change implementation | `v2.2.0-sprint3` / main `df91bee` (23 Nov 2026). BR-10 code identical to Sprint 1, plus the move route of F-05 that reuses `isBookingOpen` |
-| Contract revision | TO_FILL (commit "docs(CH-09): ...") |
-| Red tests | TO_FILL (commit "test(CH-09): ...") |
-| Fix | TO_FILL (commit "feat(CH-09): ...") |
-| Main release / deployed revision | TO_FILL |
+| Contract revision | `d8dbe36` docs(CH-09), 23 Nov 2026, branch maintenance/CH-09-booking-cutoff, reviewed in PR #31 on 24 Nov 06:46 UTC before the fix |
+| Red tests | `ba197c4` test(CH-09): CI run 45342645430 failed as expected (server: TEST-20, TEST-92 to TEST-95 failed, 84 passed; E2E: TEST-96 failed, 14 passed) |
+| Fix | `0d62a5c` feat(CH-09): CI run 45343154888 passed (89 server tests, 15 E2E) |
+| Main release / deployed revision | PR #31 merged into main 24 Nov 2026 06:59 UTC = `a68f7ce`, tag `v2.3.0-d2`. Deploy run 45344515492: Cloud Run revision slotbook-00006-54x, smoke test passed, GET /api/version = a68f7ce |
 
 Intervening development between 0f2b680 and df91bee: Sprint 2 (F-04 to F-08, R-02, v2.0.0-sprint2), F-10 (v2.1.0-d2), Sprint 3 (F-09, F-11, R-03, v2.2.0-sprint3). Not part of this maintenance.
 
@@ -58,6 +58,6 @@ One active booking per slot under concurrency (TEST-24, TEST-25), topic 5-200 (T
 
 | Reviewer | Date | Comment | Answer |
 |---|---|---|---|
-| Yohann MOSCATO | TO_FILL | TO_FILL (real comment in the PR "docs(CH-09)") | TO_FILL |
+| Yohann MOSCATO | 24 Nov 2026 06:46 UTC (PR #31, before the fix commit) | "BR-10 boundary is clear: exactly 3:00 is allowed, 2:59 is refused. AC-66 tests both sides (TEST-92, TEST-93). Good catch in the impact table: the 1 hour limit was written a second time in schedules.ts. One shared constant is better. TEST-20 changes its expected result (60 min: true -> false); this is explained in STS v1.1, OK for me. The move (F-05) also uses the new limit, covered by TEST-95. Contract OK, you can implement." | Fix commit 0d62a5c pushed after the review; PR approved on 24 Nov 06:56 UTC |
 
-Decision: TO_FILL (approved / changes requested).
+Decision: approved (contract review 24 Nov 06:46 UTC, PR approval 24 Nov 06:56 UTC).

@@ -1,0 +1,13 @@
+$ (cd server) npx prisma migrate deploy
+(commit a68f7ce5016da485e2913b8088cf838282495577, 2026-11-25 05:30 +0100)
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+Datasource "db": PostgreSQL database "slotbook_release", schema "public" at "localhost:5432"
+
+5 migrations found in prisma/migrations
+
+
+No pending migrations to apply.
+exit code 0

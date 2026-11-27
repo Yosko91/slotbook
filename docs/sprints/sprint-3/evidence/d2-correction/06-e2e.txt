@@ -1,0 +1,26 @@
+$ (cd .) npx playwright test --reporter=list
+(commit a68f7ce5016da485e2913b8088cf838282495577, 2026-11-25 05:28 +0100)
+
+[WebServer] npm warn allow-scripts .npmrc allow-scripts setting is being ignored because --allow-scripts was passed on the command line
+
+Running 15 tests using 1 worker
+
+  ✓   1 [chromium] › e2e\ch09-cutoff.spec.ts:31:5 › TEST-96 a slot in less than 3 hours is not offered, a slot in 3 hours or more is (AC-14, AC-66) (4.1s)
+  ✓   2 [chromium] › e2e\ch09-cutoff.spec.ts:84:5 › TEST-97 preserved Sprint 1 access: other student gets not found, tutor cannot book (BR-12, AC-20, AC-21) (2.1s)
+  ✓   3 [chromium] › e2e\sprint1.spec.ts:60:5 › TEST-08 login, header and logout (AC-01, AC-04) (1.5s)
+  ✓   4 [chromium] › e2e\sprint1.spec.ts:76:5 › wrong password shows the error (AC-02) (846ms)
+  ✓   5 [chromium] › e2e\sprint1.spec.ts:85:5 › TEST-19, TEST-30 tutor adds a slot, student books it, tutor sees the booking (4.1s)
+  ✓   6 [chromium] › e2e\sprint1.spec.ts:149:5 › TEST-31 slot taken by another student while the page is open (AC-16) (1.5s)
+  ✓   7 [chromium] › e2e\sprint1.spec.ts:179:5 › student cannot open the tutor page and the API refuses (AC-12, AC-21) (1.2s)
+  ✓   8 [chromium] › e2e\sprint2.spec.ts:24:5 › TEST-67 student cancels a booking and the slot is open again (AC-22, AC-27) (2.3s)
+  ✓   9 [chromium] › e2e\sprint2.spec.ts:60:5 › TEST-68 student moves a booking to another slot (AC-28) (2.4s)
+  ✓  10 [chromium] › e2e\sprint2.spec.ts:92:5 › TEST-69 tutor removes an open slot (AC-34) (1.8s)
+  ✓  11 [chromium] › e2e\sprint2.spec.ts:117:5 › TEST-70 student filters by tutor and by date, then clears (AC-45) (1.3s)
+  ✓  12 [chromium] › e2e\sprint3-final.spec.ts:27:5 › F-09 UI: tutor adds the same slot for 2 weeks (AC-51) (1.8s)
+  ✓  13 [chromium] › e2e\sprint3-final.spec.ts:49:5 › TEST-88 tutor sees the summary of a period, same numbers as the API (AC-60) (1.2s)
+  ✓  14 [chromium] › e2e\sprint3-final.spec.ts:82:7 › TEST-90 no horizontal scroll at 375 px (AC-65, NFR-09) › five main screens fit in 375 px (6.1s)
+npm warn allow-scripts .npmrc allow-scripts setting is being ignored because --allow-scripts was passed on the command line
+  ✓  15 [chromium] › e2e\sprint3.spec.ts:7:5 › TEST-83 tutor records attendance of a past session (AC-55, AC-56) (4.5s)
+
+  15 passed (46.9s)
+exit code 0
