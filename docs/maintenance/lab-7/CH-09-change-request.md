@@ -17,7 +17,7 @@ GitHub Issue: #30. Type: adaptive/perfective maintenance (changed requirement, n
 | Scope | One constant and its 3 uses (book, move target, available slots). No new screen, no new endpoint, no migration. |
 | Out of scope | Cancel/move 12 h rule of the student (BR-15), tutor cancel, attendance, slot creation rules BR-05 to BR-08. |
 | Acceptance criteria | AC-14 v1.1, AC-18 v1.1, AC-30 v1.1, new AC-66 (see F-03 v1.1, F-05 v1.1). |
-| Approval | Team: Yohann MOSCATO agrees in Issue #30 (24 Nov 2026 06:45 UTC) and approves the revised contract in PR #31 (24 Nov 06:46 UTC). No separate instructor/TA approval was asked: we understood it was not required. |
+| Approval | Team: Yohann MOSCATO agrees in Issue #30 (24 Nov 2026 06:45 UTC) and approves the revised contract in PR #31 (24 Nov 06:46 UTC). On 25 Nov 2026 (after the merge) Heloise also e-mailed the change request to the instructor and TAs; TA Kantapat Suwannahong answered at 11:48 Bangkok time: "For Lab 7, you do not need to have the instructor or TAs check or approve your work. You can proceed directly." |
 
 ## 2. Versions
 
